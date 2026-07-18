@@ -168,25 +168,16 @@ export default function DailyPage() {
           </div>
         </div>
 
-        {/* Mock Today's Stats - clickable */}
-        <div 
-          className="card" 
-          style={{ padding: 16, marginBottom: 20, opacity: 0.75, cursor: 'pointer' }}
+        {/* Today's count — one quiet line, not a card of its own */}
+        <p
+          className="muted"
+          style={{ fontSize: 12, textAlign: 'right', margin: '0 0 14px', opacity: 0.8, cursor: 'pointer' }}
           onClick={() => setShowLoginPrompt(true)}
         >
-          <h3 style={{ margin: '0 0 8px', fontSize: 14 }}>
-            {language === 'zh' ? '今日连接' : 'Today\'s Connections'}
-          </h3>
-          <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--wish)' }}>
-            0
-          </div>
-          <p className="muted" style={{ margin: '4px 0 0', fontSize: 12 }}>
-            {language === 'zh' 
-              ? '建议：正常连接' 
-              : 'Suggestion: Normal connection'
-            }
-          </p>
-        </div>
+          {language === 'zh' ? '今日连接' : 'Today'}: <b style={{ color: 'var(--wish)' }}>0</b>
+          {' · '}
+          {language === 'zh' ? '建议：正常连接' : 'suggested: normal'}
+        </p>
 
         {/* Mock Wish Cards - clickable */}
         <div style={{ marginBottom: 20, opacity: 0.75 }}>
@@ -373,29 +364,15 @@ export default function DailyPage() {
         </div>
       </div>
 
-      {/* Today's Summary */}
-      <div className="card" style={{ padding: 16, marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <span style={{ fontSize: 14, color: 'var(--text)' }}>
-              {language === 'zh' ? '今日连接' : 'Today\'s connections'}:
-            </span>
-            <span style={{ 
-              fontSize: 20, 
-              fontWeight: 700, 
-              color: 'var(--wish)', 
-              marginLeft: 8 
-            }}>
-              {todayConnections.length}
-            </span>
-          </div>
-          <div style={{ color: 'var(--text)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 4 }}>
-            {language === 'zh' ? '建议:' : 'Suggested:'}{' '}
-            {suggestedLevelInfo && <ConnectionIcon levelId={suggestedLevelInfo.id} size={14} />}
-            {language === 'zh' ? suggestedLevelInfo?.label : suggestedLevelInfo?.labelEn}
-          </div>
-        </div>
-      </div>
+      {/* Today's count — one quiet line tucked to the side, not its own card */}
+      <p className="muted" style={{ fontSize: 12, textAlign: 'right', margin: '0 0 14px', opacity: 0.85, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 5 }}>
+        {language === 'zh' ? '今日连接' : 'Today'}:
+        <b style={{ color: 'var(--wish)' }}>{todayConnections.length}</b>
+        {' · '}
+        {language === 'zh' ? '建议' : 'suggested'}:
+        {suggestedLevelInfo && <ConnectionIcon levelId={suggestedLevelInfo.id} size={13} />}
+        {language === 'zh' ? suggestedLevelInfo?.label : suggestedLevelInfo?.labelEn}
+      </p>
 
       {/* Loading state */}
       {loading ? (

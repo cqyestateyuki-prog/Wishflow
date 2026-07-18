@@ -49,14 +49,31 @@
   stroke-dasharray: 7 14;
 }
 
-/* Galaxy spiral arms — dashed ink, star-stream slowly flowing outward */
+/* Galaxy spiral arms — dashed ink, the star-stream visibly flowing outward
+   (same felt pace as the landing river) */
 .galaxyArm {
   fill: none;
   stroke: rgba(91, 75, 132, 0.42);
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-dasharray: 10 12;
-  animation: wmArmFlow 44s linear infinite;
+  animation: wmArmFlow 12s linear infinite;
+}
+
+/* The galactic heart breathes, barely */
+.coreHaze {
+  animation: wmCoreBreathe 8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes wmCoreBreathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.noAnimation .coreHaze {
+  animation: none;
 }
 
 @keyframes wmArmFlow {

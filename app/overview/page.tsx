@@ -178,16 +178,21 @@ export default function OverviewPage() {
     return (
       <PageShell titleKey="overview_title">
         {/* Title */}
-        <div style={{ marginBottom: 18 }}>
-          <h1 className="h1" style={{ margin: 0 }}>
-            {language === 'zh' ? '愿力地图' : 'Wish Map'}
-          </h1>
-          <p className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-            {language === 'zh' 
-              ? '登录后创建你自己的愿力宇宙。' 
-              : 'Sign in to create your own wish universe.'
-            }
-          </p>
+        <div style={{ marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+          <div>
+            <h1 className="h1" style={{ margin: 0 }}>
+              {language === 'zh' ? '愿力地图' : 'Wish Map'}
+            </h1>
+            <p className="muted" style={{ marginTop: 4, fontSize: 13 }}>
+              {language === 'zh'
+                ? '登录后创建你自己的愿力宇宙。'
+                : 'Sign in to create your own wish universe.'
+              }
+            </p>
+          </div>
+          <Link href="/try" className="btn primary">
+            {language === 'zh' ? '+ 新建愿望' : '+ New Wish'}
+          </Link>
         </div>
 
         {/* Demo map + shelf (map full width, wishes as gallery cards below) */}
@@ -349,16 +354,21 @@ export default function OverviewPage() {
       )}
 
       {/* Title */}
-      <div style={{ marginBottom: 18 }}>
+      <div style={{ marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+        <div>
         <h1 className="h1" style={{ margin: 0 }}>
           {language === 'zh' ? '愿力地图' : 'Wish Map'}
         </h1>
         <p className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-          {language === 'zh' 
-            ? '你写下的愿望不会消失，它们会变成星星存在于这片宇宙中。' 
+          {language === 'zh'
+            ? '你写下的愿望不会消失，它们会变成星星存在于这片宇宙中。'
             : 'Your wishes will never disappear. They become stars that watch over you.'
           }
         </p>
+        </div>
+        <Link href="/try" className="btn primary">
+          {language === 'zh' ? '+ 新建愿望' : '+ New Wish'}
+        </Link>
       </div>
 
       {loading ? (

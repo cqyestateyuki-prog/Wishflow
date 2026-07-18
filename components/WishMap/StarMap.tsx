@@ -78,9 +78,12 @@ function makeArmPath(phase: number, seed: number): string {
 
 const ARMS = ARM_PHASES.map((p, i) => makeArmPath(p, 77 + i * 31));
 
-// The milky band: dense star-dust scattered along each arm
-function makeArmDust(): Array<{ x: number; y: number; r: number; o: number }> {
-  const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+// The milky band: dense star-dust scattered along each arm; roughly a
+// quarter of the specks twinkle (≥3.2s periods, staggered) so the whole
+// stream feels alive without ever flickering.
+type ArmSpeck = { x: number; y: number; r: number; o: number; tw: boolean; dur: number; delay: number };
+function makeArmDust(): ArmSpeck[] {
+  const out: ArmSpeck[] = [];
   let s = 12345;
   const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
   ARM_PHASES.forEach(phase => {
@@ -92,7 +95,14 @@ function makeArmDust(): Array<{ x: number; y: number; r: number; o: number }> {
       const rr = r + (rand() - 0.5) * spread * 2;
       const x = CENTER_X + Math.cos(t + phase) * rr;
       const y = CENTER_Y + Math.sin(t + phase) * rr * RY_FACTOR;
-      out.push({ x, y, r: 0.7 + rand() * 1.5, o: 0.12 + rand() * 0.4 });
+      out.push({
+        x, y,
+        r: 0.7 + rand() * 1.5,
+        o: 0.12 + rand() * 0.4,
+        tw: rand() < 0.26,
+        dur: 3.2 + rand() * 3.4,
+        delay: rand() * 6,
+      });
     }
   });
   return out;
@@ -300,6 +310,7 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
 
             {/* Galactic core haze — the soft heart of the spiral */}
             <ellipse
+              className={styles.coreHaze}
               cx={CENTER_X}
               cy={CENTER_Y}
               rx={120}
@@ -325,10 +336,26 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
               </g>
             ))}
 
-            {/* The milky band along the arms */}
+            {/* The milky band along the arms — a quarter of it twinkling */}
             <g aria-hidden="true">
               {ARM_DUST.map((d, i) => (
-                <circle key={`ad-${i}`} cx={d.x} cy={d.y} r={d.r} fill="#9B8FC4" opacity={d.o} />
+                <circle
+                  key={`ad-${i}`}
+                  cx={d.x}
+                  cy={d.y}
+                  r={d.r}
+                  fill="#9B8FC4"
+                  className={d.tw ? styles.dustTwinkle : undefined}
+                  style={
+                    d.tw
+                      ? ({
+                          '--dust-base': d.o,
+                          animationDuration: `${d.dur}s`,
+                          animationDelay: `${d.delay}s`,
+                        } as React.CSSProperties)
+                      : { opacity: d.o }
+                  }
+                />
               ))}
             </g>
           </g>

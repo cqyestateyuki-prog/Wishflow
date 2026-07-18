@@ -17,6 +17,7 @@ import { useLanguage } from '@/components/LanguageProvider';
 import { LocalWish, clearSampleData } from '@/lib/localStore';
 import { DOMAINS, STAGES, WILL_SOURCES, CONNECTION_LEVELS } from '@/lib/constants';
 import { supabase } from '@/lib/supabase/client';
+import { WOBBLY_FRAME } from '@/components/wobblyFrame';
 import cardStyles from '@/components/WishCard/WishCard.module.css';
 
 type SortOption = 'recent' | 'created' | 'pinned';
@@ -56,6 +57,8 @@ export default function WishesPage() {
   } = useLocalWishes();
   
   const [detailWish, setDetailWish] = useState<LocalWish | null>(null);
+  // Quick-create box at the top — hands the text to /try for generation
+  const [quickWish, setQuickWish] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('pinned');
@@ -202,6 +205,39 @@ export default function WishesPage() {
             : (language === 'zh' ? '+ 新建愿望' : '+ New Wish')
           }
         </button>
+      </div>
+
+      {/* Quick create — the same hand-drawn sheet as /try, right at the top:
+          write a wish here and it sails over to the generator */}
+      <div style={{ ...WOBBLY_FRAME, padding: 'clamp(14px, 2.4vw, 26px)', marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'stretch' }}>
+          <textarea
+            value={quickWish}
+            onChange={(e) => setQuickWish(e.target.value)}
+            rows={2}
+            placeholder={language === 'zh'
+              ? '写下一个愿望，让它慢慢成形…'
+              : 'Write a wish and let it slowly take shape…'}
+            style={{
+              flex: '1 1 320px',
+              padding: '12px 14px',
+              borderRadius: 14,
+              border: '1.6px dashed var(--border)',
+              background: 'rgba(255,255,255,0.5)',
+              fontSize: 15,
+              lineHeight: 1.7,
+              resize: 'none',
+              fontFamily: 'inherit',
+            }}
+          />
+          <Link
+            href={quickWish.trim().length >= 5 ? `/try?prefill=${encodeURIComponent(quickWish.trim())}` : '/try'}
+            className="btn primary"
+            style={{ alignSelf: 'center', whiteSpace: 'nowrap', padding: '12px 22px' }}
+          >
+            {language === 'zh' ? '生成愿望图 →' : 'Generate wish image →'}
+          </Link>
+        </div>
       </div>
 
       {/* Create Form */}
