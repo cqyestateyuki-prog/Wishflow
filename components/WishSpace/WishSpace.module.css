@@ -157,6 +157,9 @@
   position: absolute;
   inset: 0;
   will-change: transform;
+  /* The manifest shrink-into-bubble transition lives on the base class (not on
+     .artToBubble) so removing the class reverses it cleanly on the way back. */
+  transition: transform 1200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .art {
@@ -274,11 +277,11 @@
 
 /* ── Manifest scene: the wish held in the mind's eye ──────── */
 
-/* The full-screen art shrinks up into the thought bubble. */
+/* The full-screen art shrinks up into the thought bubble (transition on
+   .artStage so it reverses cleanly when the class is removed). */
 .artToBubble {
   transform: scale(0.26) translateY(-14%);
   transform-origin: 50% 34%;
-  transition: transform 1200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .manifestLayer {
@@ -357,6 +360,121 @@
   background: rgba(255, 255, 255, 0.95);
   opacity: 1;
   transform: translateY(-1px);
+}
+
+/* A quiet vertical rail of icon-only actions, tucked under the close button.
+   Same chrome as .closeBtn — 40px circles that lift on hover. */
+.iconRail {
+  position: absolute;
+  top: calc(66px + env(safe-area-inset-top, 0px));
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0.75;
+  transition: background 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.iconBtn svg {
+  display: block;
+}
+
+/* ── Gentle confirm modal (hand-built, paper style — no native alert) ── */
+
+.modalOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(46, 43, 51, 0.16);
+  animation: modalOverlayIn 160ms ease;
+}
+
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalCard {
+  width: 100%;
+  max-width: 360px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 26px;
+  box-shadow: var(--shadow-lift, 0 2px 4px rgba(46, 43, 51, 0.08), 0 10px 24px rgba(46, 43, 51, 0.1));
+  animation: modalCardIn 160ms ease;
+}
+
+@keyframes modalCardIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalTitle {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+
+.modalBody {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text);
+  margin: 0 0 18px;
+}
+
+.modalNote {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--wish-ink, #5e4e8c);
+  margin: 0 0 14px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.modalCancelBtn {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.modalCancelBtn:hover {
+  background: rgba(238, 233, 245, 0.6);
 }
 
 @media (max-width: 640px) {

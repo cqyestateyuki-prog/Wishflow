@@ -397,6 +397,7 @@ export default function WishesPage() {
                           wish={wish}
                           onPinToggle={handlePinToggle}
                           onDetails={(w) => setDetailWish(w)}
+                          onWishChange={reload}
                         />
                       </div>
                     );
@@ -412,6 +413,7 @@ export default function WishesPage() {
                       wish={wish}
                       onPinToggle={handlePinToggle}
                       onDetails={(w) => setDetailWish(w)}
+                      onWishChange={reload}
                     />
                   </div>
                 ))}

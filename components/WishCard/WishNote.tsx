@@ -26,9 +26,11 @@ type WishNoteProps = {
   onPinToggle?: (wishId: string) => void;
   /** Offered as a quiet "view details" action inside the space. */
   onDetails?: (wish: LocalWish) => void;
+  /** Forwarded to the space: called after the art changes (upload / regenerate). */
+  onWishChange?: () => void;
 };
 
-export default function WishNote({ wish, active = false, onClick, onPinToggle, onDetails }: WishNoteProps) {
+export default function WishNote({ wish, active = false, onClick, onPinToggle, onDetails, onWishChange }: WishNoteProps) {
   const [spaceRect, setSpaceRect] = useState<DOMRect | null>(null);
 
   // Seeded irregularity — a note keeps its own angle, size and clip spot
@@ -79,6 +81,7 @@ export default function WishNote({ wish, active = false, onClick, onPinToggle, o
           originRect={spaceRect}
           instantAlive
           onClose={() => setSpaceRect(null)}
+          onWishChange={onWishChange}
           onDetails={onDetails ? () => {
             setSpaceRect(null);
             onDetails(wish);

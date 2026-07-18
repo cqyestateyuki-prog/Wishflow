@@ -11,13 +11,16 @@
 
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { createPortal } from 'react-dom';
-import { LocalWish, settingsStore } from '@/lib/localStore';
+import { LocalWish, settingsStore, wishStore } from '@/lib/localStore';
 import { useLanguage } from '@/components/LanguageProvider';
 import { getWishWhisper } from '@/lib/constants';
 import { WishDomain, WishMood } from '@/lib/types';
 import { generateWishSVG, renderSVGToString } from '@/lib/svgGenerator';
+import { fileToCompressedDataUrl } from '@/lib/imageUpload';
+import { supabase } from '@/lib/supabase/client';
+import { apiUrl } from '@/lib/apiBase';
 import styles from './WishSpace.module.css';
 
 type WishSpaceProps = {
@@ -33,6 +36,9 @@ type WishSpaceProps = {
   manifestHref?: string;
   /** Real wishes: a quiet "view details" action inside the space. */
   onDetails?: () => void;
+  /** Real wishes: called after the art changes (upload / regenerate) so the
+      parent list can refresh from storage. */
+  onWishChange?: () => void;
 };
 
 type Phase = 'enter' | 'drawing' | 'alive';
@@ -50,13 +56,27 @@ function seededRandom(seedStr: string): () => number {
   };
 }
 
-export default function WishSpace({ wish, originRect, onClose, instantAlive = false, manifestHref, onDetails }: WishSpaceProps) {
+export default function WishSpace({ wish, originRect, onClose, instantAlive = false, manifestHref, onDetails, onWishChange }: WishSpaceProps) {
   const { language } = useLanguage();
   const [phase, setPhase] = useState<Phase>('enter');
   const [closing, setClosing] = useState(false);
-  // Manifest scene (demo): the art shrinks into a thought bubble above a
-  // meditating figure — the wish being held in the mind's eye.
+  // Manifest scene: the art shrinks into a thought bubble above a meditating
+  // figure — the wish held in the mind's eye. Available in the landing demo
+  // and for real wishes alike.
   const [manifested, setManifested] = useState(false);
+
+  // Icon-rail actions (real wishes only): swap in my own drawing, or ask for a
+  // fresh AI one. Both confirm through a small paper modal first.
+  const [activeModal, setActiveModal] = useState<null | 'upload' | 'regenerate'>(null);
+  const [regenBusy, setRegenBusy] = useState(false);
+  const [modalNotice, setModalNotice] = useState('');
+  // Overrides let the shown art switch the instant an action lands, before the
+  // parent reloads the wish from storage.
+  //   imageOverride: undefined = untouched · string = uploaded · null = cleared
+  //   (a regenerate drops any user image so the new SVG shows through).
+  const [imageOverride, setImageOverride] = useState<string | null | undefined>(undefined);
+  const [svgOverride, setSvgOverride] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -72,15 +92,20 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
     return reduced || !settingsStore.get().animationEnabled;
   }, []);
 
+  // What art is actually shown: an in-session override wins over the stored
+  // wish, so upload / regenerate switch the picture immediately.
+  const effectiveImage = imageOverride !== undefined ? imageOverride : (wish.user_image ?? null);
+  const effectiveSvg = svgOverride ?? wish.svg_data;
+
   // The artwork as an SVG string (AI art, or the deterministic fallback).
   // A user-uploaded raster drawing renders as <img> instead.
   const artHtml = useMemo(() => {
-    if (wish.user_image) return null;
-    if (wish.svg_data) return wish.svg_data;
+    if (effectiveImage) return null;
+    if (effectiveSvg) return effectiveSvg;
     const domain = (wish.domain as WishDomain) || '生活';
     const mood = (wish.mood as WishMood) || '平静';
     return renderSVGToString(generateWishSVG(domain, mood, wish.line_seed || wish.title || wish.id));
-  }, [wish.user_image, wish.svg_data, wish.domain, wish.mood, wish.line_seed, wish.title, wish.id]);
+  }, [effectiveImage, effectiveSvg, wish.domain, wish.mood, wish.line_seed, wish.title, wish.id]);
 
   const motes = useMemo(() => {
     const rand = seededRandom(wish.id);
@@ -107,7 +132,7 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
     setPhase('drawing');
 
     // Raster drawing: no strokes to trace — develop it like wet ink drying.
-    if (wish.user_image) {
+    if (effectiveImage) {
       const a = art.animate(
         [
           { opacity: 0.15, filter: 'blur(10px)' },
@@ -225,7 +250,7 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
         timersRef.current.push(window.setTimeout(beginStrokes, 350));
       })
       .catch(() => setPhase('alive'));
-  }, [motionOff, wish.user_image]);
+  }, [motionOff, effectiveImage]);
 
   // ── Entrance: FLIP zoom from the clicked card into the space ──
   useEffect(() => {
@@ -376,6 +401,89 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
     return () => window.removeEventListener('keydown', onKey);
   }, [handleClose]);
 
+  // ── Real-wish actions: swap in my own drawing, or redraw with AI ──
+  const closeModal = () => {
+    setActiveModal(null);
+    setModalNotice('');
+  };
+
+  const handleImagePick = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file
+    if (!file) return;
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      wishStore.update(wish.id, { user_image: dataUrl });
+      setImageOverride(dataUrl); // the <img> branch shows it immediately
+      setSvgOverride(null);
+      setModalNotice('');
+      setActiveModal(null);
+      onWishChange?.();
+    } catch {
+      setModalNotice(
+        language === 'zh' ? '这张图没读出来，换一张试试。' : "Couldn't read that image — try another."
+      );
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (regenBusy) return;
+    setRegenBusy(true);
+    setModalNotice('');
+    try {
+      // Same call as /try: send the auth token when signed in so it counts
+      // against the account quota (3/day), not the anonymous IP quota (1/day).
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
+      const response = await fetch(apiUrl('/api/classify'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          description: wish.description || wish.title,
+          generateSVG: true,
+          language,
+        }),
+      });
+      if (!response.ok) throw new Error('request-failed');
+      const result = (await response.json()) as {
+        svg?: string;
+        quotaExceeded?: boolean;
+        quota?: { used: number; limit: number };
+      };
+
+      // Quota spent: keep the modal open and say so gently, nothing replaced.
+      if (result.quotaExceeded) {
+        const lim = result.quota?.limit ?? 1;
+        setModalNotice(
+          language === 'zh'
+            ? `今天的 ${lim} 张 AI 手绘用完了。${lim === 1 ? '登录后每天有 3 张。' : '明天再来看看。'}`
+            : `You've used today's ${lim} AI drawing${lim > 1 ? 's' : ''}. ${lim === 1 ? 'Sign in for 3 a day.' : 'Come back tomorrow.'}`
+        );
+        return;
+      }
+      if (result.svg) {
+        wishStore.update(wish.id, { svg_data: result.svg, user_image: null });
+        setSvgOverride(result.svg); // feed the artHtml memo the fresh SVG
+        setImageOverride(null); // and drop any user image so it shows through
+        setModalNotice('');
+        setActiveModal(null);
+        onWishChange?.();
+      } else {
+        setModalNotice(
+          language === 'zh' ? '这次没画成，过会再试。' : "Couldn't draw this time — try again in a bit."
+        );
+      }
+    } catch {
+      setModalNotice(
+        language === 'zh' ? '这次没画成，过会再试。' : "Couldn't draw this time — try again in a bit."
+      );
+    } finally {
+      setRegenBusy(false);
+    }
+  };
+
   if (typeof document === 'undefined') return null;
 
   const overlayClass = motionOff ? `${styles.overlay} ${styles.still}` : styles.overlay;
@@ -434,10 +542,10 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
               ref={sheetWrapRef}
               className={manifested ? `${styles.artStage} ${styles.artToBubble}` : styles.artStage}
             >
-              {wish.user_image ? (
+              {effectiveImage ? (
                 <div ref={artRef} className={artClass}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={wish.user_image} alt={wish.title} />
+                  <img src={effectiveImage} alt={wish.title} />
                 </div>
               ) : (
                 <div
@@ -448,12 +556,12 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
               )}
             </div>
 
-            {/* Manifest scene: thought bubble + meditating figure */}
-            {manifestHref && (
-              <div
-                className={manifested ? `${styles.manifestLayer} ${styles.manifestOn}` : styles.manifestLayer}
-                aria-hidden="true"
-              >
+            {/* Manifest scene: thought bubble + meditating figure. Rendered for
+                the demo and real wishes alike — invisible until manifested. */}
+            <div
+              className={manifested ? `${styles.manifestLayer} ${styles.manifestOn}` : styles.manifestLayer}
+              aria-hidden="true"
+            >
                 <svg className={styles.bubble} viewBox="0 0 210 226">
                   <g fill="none" stroke="#2E2B33" strokeLinecap="round">
                     {/* hand-drawn thought bubble, gently irregular */}
@@ -479,7 +587,6 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
                   </g>
                 </svg>
               </div>
-            )}
 
             <div className={textClass} data-keep>
               <h2 className={styles.title}>{wish.title}</h2>
@@ -500,9 +607,24 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
                     {language === 'zh' ? '显化这个愿望' : 'Manifest this wish'}
                   </button>
                 )
-              ) : (
+              ) : manifested ? (
+                // Real wish, held in the mind's eye: just look, then come back.
                 <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  {!wish.user_image && !motionOff && (
+                  {onDetails && (
+                    <button className={styles.replayBtn} onClick={onDetails}>
+                      {language === 'zh' ? '查看详情' : 'View details'}
+                    </button>
+                  )}
+                  <button className={styles.replayBtn} onClick={() => setManifested(false)}>
+                    {language === 'zh' ? '回来' : 'Back'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button className={styles.manifestBtn} onClick={() => setManifested(true)}>
+                    {language === 'zh' ? '显化这个愿望' : 'Manifest this wish'}
+                  </button>
+                  {!effectiveImage && !motionOff && (
                     <button className={styles.replayBtn} onClick={runDraw}>
                       {language === 'zh' ? '让它再画一次' : 'Draw it once more'}
                     </button>
@@ -550,6 +672,123 @@ export default function WishSpace({ wish, originRect, onClose, instantAlive = fa
       >
         ×
       </button>
+
+      {/* Real-wish tools, tucked under the close button: swap in my own drawing,
+          or redraw with AI. Hidden in the landing demo (those aren't stored). */}
+      {!manifestHref && (
+        <>
+          <div className={styles.iconRail}>
+            <button
+              className={styles.iconBtn}
+              data-keep
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalNotice('');
+                setActiveModal('upload');
+              }}
+              aria-label={language === 'zh' ? '上传我画的图' : 'Upload my own drawing'}
+            >
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3.5" y="4.5" width="17" height="15" rx="3" />
+                <circle cx="7.5" cy="8.5" r="1.3" />
+                <path d="M13 17.5 L13 10" />
+                <path d="M10 12.5 L13 9.5 L16 12.5" />
+              </svg>
+            </button>
+            <button
+              className={styles.iconBtn}
+              data-keep
+              onClick={(e) => {
+                e.stopPropagation();
+                setModalNotice('');
+                setActiveModal('regenerate');
+              }}
+              aria-label={language === 'zh' ? '重新生成图' : 'Regenerate image'}
+            >
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+            </button>
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImagePick}
+            data-keep
+            style={{ display: 'none' }}
+          />
+
+          {activeModal && (
+            <div
+              className={styles.modalOverlay}
+              data-keep
+              onClick={(e) => {
+                e.stopPropagation();
+                closeModal();
+              }}
+            >
+              <div className={styles.modalCard} data-keep onClick={(e) => e.stopPropagation()}>
+                {activeModal === 'upload' ? (
+                  <>
+                    <h3 className={styles.modalTitle}>
+                      {language === 'zh' ? '换成我画的' : 'Use my own drawing'}
+                    </h3>
+                    <p className={styles.modalBody}>
+                      {language === 'zh'
+                        ? '选择一张图片替换当前的画。随时可以在详情里还原成生成的图。'
+                        : 'Pick an image to replace this drawing. You can revert to the generated art anytime from details.'}
+                    </p>
+                    {modalNotice && <p className={styles.modalNote}>{modalNotice}</p>}
+                    <div className={styles.modalActions}>
+                      <button className={styles.modalCancelBtn} onClick={closeModal}>
+                        {language === 'zh' ? '取消' : 'Cancel'}
+                      </button>
+                      <button
+                        className={styles.manifestBtn}
+                        style={{ marginTop: 0 }}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        {language === 'zh' ? '选择图片' : 'Choose image'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className={styles.modalTitle}>
+                      {language === 'zh' ? '重新生成这幅画' : 'Redraw this wish'}
+                    </h3>
+                    <p className={styles.modalBody}>
+                      {language === 'zh'
+                        ? '会用掉今天的一次 AI 手绘额度，当前的画会被替换。'
+                        : "This uses one of today's AI drawings and replaces the current art."}
+                    </p>
+                    {modalNotice && <p className={styles.modalNote}>{modalNotice}</p>}
+                    <div className={styles.modalActions}>
+                      <button className={styles.modalCancelBtn} onClick={closeModal}>
+                        {language === 'zh' ? '取消' : 'Cancel'}
+                      </button>
+                      <button
+                        className={styles.manifestBtn}
+                        style={{ marginTop: 0, opacity: regenBusy ? 0.7 : 1 }}
+                        onClick={handleRegenerate}
+                        disabled={regenBusy}
+                      >
+                        {regenBusy
+                          ? (language === 'zh' ? '画着呢…' : 'Drawing…')
+                          : (language === 'zh' ? '重新生成' : 'Regenerate')}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>,
     document.body
   );
