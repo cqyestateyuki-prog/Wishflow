@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Work_Sans } from 'next/font/google';
 import Nav from '../components/Nav';
+import AmbientBackground from '../components/AmbientBackground';
 import AuthCloudSync from '../components/AuthCloudSync';
 import PwaRegister from '../components/PwaRegister';
 import { LanguageProvider } from '../components/LanguageProvider';
@@ -57,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${fraunces.variable} ${workSans.variable}`}>
-        <div className="ambient" />
+        <AmbientBackground />
         <LanguageProvider>
           <PwaRegister />
           <AuthCloudSync />

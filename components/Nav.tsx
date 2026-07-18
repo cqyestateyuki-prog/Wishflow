@@ -59,7 +59,7 @@ export default function Nav() {
   }
 
   return (
-    <div className="card" style={{ position: 'sticky', top: 0, zIndex: 10, borderRadius: 0 }}>
+    <div className="card" style={{ position: 'sticky', top: 0, zIndex: 10, borderRadius: 0, boxShadow: 'none', borderBottom: '1px solid var(--border)' }}>
       <div
         className="container"
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px' }}
