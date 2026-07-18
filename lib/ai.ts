@@ -97,29 +97,35 @@ export async function classifyWish(description: string, language: UiLanguage = '
     throw new AIError('Description is too short', 'INVALID_INPUT');
   }
 
-  const client = createClient();
   const prompt = buildClassificationPrompt(description, language);
 
-  try {
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 500,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    });
+  // Same provider preference as drawing: Gemini free tier first, then Anthropic.
+  const provider = aiProvider();
+  if (!provider) {
+    throw new AIError('No AI provider configured', 'MISSING_API_KEY');
+  }
 
-    // Extract text content from response
-    const textContent = response.content.find(block => block.type === 'text');
-    if (!textContent || textContent.type !== 'text') {
-      throw new AIError('No text response from Claude', 'INVALID_RESPONSE');
+  try {
+    let raw: string;
+    if (provider === 'gemini') {
+      raw = await requestGeminiText(prompt, process.env.GEMINI_API_KEY!, 1200);
+    } else {
+      const client = createClient();
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 500,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      });
+      raw = extractTextContent(response);
     }
 
     // Parse JSON from response
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       throw new AIError('Could not parse JSON from response', 'PARSE_ERROR');
     }
@@ -260,41 +266,48 @@ const LOCAL_KEYWORD_EN: Record<string, string> = {
 // Full single-line-illustration art direction, written for a capable model
 // that can actually plan SVG geometry. Encodes the aesthetic AND the specific
 // failure modes we've seen (giant blob figures, disconnected scribbles).
-const SVG_GENERATION_PROMPT = `You are the illustrator for Wishflow — a gentle, life-long wish app. Draw ONE quiet, hand-drawn, single-line-style SVG scene that lovingly represents the user's wish. Think Pinterest / Dribbble minimal line art, drawn with a calm confident pen on warm paper.
+const SVG_GENERATION_PROMPT = `You are the illustrator for Wishflow — a gentle, life-long wish app. Draw ONE quiet, hand-drawn line-art SVG that lovingly represents the user's wish. The house style is minimal ink-on-warm-paper — but this should read as a considered little VIGNETTE with a sense of place and depth, not a lone floating icon.
 
-# The aesthetic (follow exactly)
-- One clear, RECOGNIZABLE subject in generous empty space. A viewer should name it in one second.
-- Continuous, flowing, gently wobbly strokes — like one unbroken pen line. Curves over rigid corners. A little organic imperfection is good; disconnected scribbles are not.
-- Calm and minimal: ONE main subject + 2 to 4 small supporting elements. No clutter, no background fill.
-- Never include <text>, numbers, logos, realistic shading, gradients, or large solid-filled shapes. fill="none" on everything except tiny dot accents (r ≤ 3).
+# What "richer but still calm" means (follow exactly)
+- A clear RECOGNIZABLE hero subject, PLUS a small world around it built in gentle LAYERS: a foreground detail or two, the midground hero, and a soft far background (distant hills / a horizon / a few stars). Depth comes from layering, not from clutter.
+- THE DEFINING PROP RULE: before drawing, name the ONE object that makes this wish THIS wish (a bakery → loaves in a window and a hanging sign; a marathon → a race bib or finish banner; a piano dream → the piano). That prop MUST be clearly drawn on or beside the hero. If a stranger couldn't guess the wish from the drawing, it fails.
+- ICONIC WHOLE-OBJECT RULE: draw the hero object COMPLETE, from the outside, as its most recognizable profile silhouette — a ship = full hull + stacked deck layers + funnel with one smoke curl + a row of porthole dots; a house = the whole house; a van = the whole van. NEVER zoom into a fragment or first-person view: a railing without the ship, a counter without the room, hands without a figure all fail — even if the wish text mentions the fragment ("at the railing" still means DRAW THE WHOLE SHIP, with small figures on its deck). Simple stacked geometric masses read best; a short row of dots (portholes / windows) gives the silhouette rhythm.
+- 6 to 10 elements total. Every element earns its place and relates to the wish — no random confetti.
+- SPATIAL CLARITY (critical): exactly ONE ground/horizon line runs through the scene. At most 4 background curves total (hills, path, breeze), and background lines must NEVER cross each other or the hero — a tangle of intersecting curves reads as scribble, not depth.
+- Continuous, confident, gently wobbly pen strokes. Curves over rigid corners. Vary line weight for depth (near = heavier, far = lighter).
+- Add SPARSE texture to suggest material without shading: 2–5 short parallel hatch strokes for a shadow under the subject, a few tick-marks for grass / water / wood grain. Keep it whisper-light.
+- The hero should feel ALIVE and specific: a boat leaning with the wave, smoke curling from a chimney, a figure mid-gesture — a caught moment, not a static logo.
+- Never include <text>, numbers, logos, realistic shading, gradients, or large solid-filled shapes. fill="none" on everything except tiny dot accents (r ≤ 3). Keep generous breathing room around the whole scene.
 
 # Proportion rules (critical — avoids ugly output)
-- Draw a PERSON as small and gestural: a small circle head (r 5-8), a simple curved-line body, thin limbs. People are SMALL accents in the scene, never giant ovals. Never draw a huge ellipse "head" or a big filled blob body.
-- Objects should sit at believable size and rest on a ground/water line, not float randomly.
-- Keep the whole drawing inside the safe area x: 40-360, y: 30-190.
+- Draw a PERSON as a GESTURE FIGURE in the same single-line spirit as the scene: ONE flowing curved stroke for the spine and torso (never a straight stick), a small tilted oval head (r 5–8), a single stroke suggesting hair, and exactly one clothing hint (a coat hem, a skirt line, a rolled sleeve). Limbs are gently curved lines with implied elbows and knees, caught mid-gesture with weight on one leg. NO facial features — emotion lives entirely in posture: a tilted head reads as tenderness, arms wide as joy, a lean as longing. Think one-line figure drawing, not a rigid stick figure. People are SMALL accents, never giant ovals or filled blobs.
+- Everything rests on a believable ground / water line at a plausible relative size — nothing floats randomly.
+- Keep the whole drawing inside the safe area x: 30-370, y: 24-200.
 
-# Canvas & lines
-- viewBox MUST be "0 0 400 220". The subject sits centered, slightly low (around x 200, y 90-160).
-- Main subject: stroke="#2E2B33" stroke-width="2.6". Supporting: stroke="#6B5C8E" stroke-width="1.8". Distant/background: stroke="#B5A8D0" stroke-width="1.4".
+# Canvas & depth palette
+- viewBox MUST be "0 0 400 220". The hero sits centered, slightly low (around x 200, y 95-160).
+- Foreground / hero outline: stroke="#2E2B33" stroke-width="2.6".
+- Midground support: stroke="#6B5C8E" stroke-width="1.8".
+- Far background + texture hatching: stroke="#B5A8D0" stroke-width="1.3" with lower opacity.
 - Every stroke: stroke-linecap="round" stroke-linejoin="round" (put these on a wrapping <g> so all children inherit).
 
-# Motion (only for flowing things)
-Add a small <style> with these keyframes and animate ONLY water, clouds, mist, or starlight — never the boat/house/person:
+# Motion (only for flowing things — and make it VISIBLE)
+Add a small <style> with these keyframes and animate ONLY water, clouds, mist, smoke, or starlight — never the boat / house / person. Motion must be noticeable at a glance (small amplitudes read as a broken image):
 <style>
-@keyframes wave { from { transform: translateX(0); } to { transform: translateX(-20px); } }
-@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes wave { from { transform: translateX(0); } to { transform: translateX(-32px); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
 </style>
-Waves: stroke-dasharray="14 8" style="animation: wave 6s linear infinite". Clouds/mist: style="animation: float 7s ease-in-out infinite".
+Waves: stroke-dasharray="14 8" style="animation: wave 5s linear infinite". Clouds / mist / smoke: style="animation: float 5s ease-in-out infinite". Animate at least TWO flowing elements in every scene.
 
-# What to draw for different wishes
+# What to draw for different wishes (hero + a layered little world around it)
 Pick concrete imagery from the wish (draw the noun, not a symbol):
-- travel / boat: a small sailboat or boat on gentle waves, a sun, maybe a distant shore.
-- family / love: a small house or a boat with 1-2 small gestural figures close together; a heart accent.
-- home / peace: a cozy house with a pitched roof, a door, a curl of smoke, a small tree, a path.
-- money / growth: a growing plant or small tree, a watering can, gentle rising hills — never coins-as-progress-bar.
-- health: a sprout, a leaf, a calm figure stretching, a gentle hill path.
-- creation: an open book, a pen with a flowing line, a picture frame, a few stars.
-- direction / future: a winding path over hills toward a rising sun or a single guiding star.
+- travel / sea: a small sailboat leaning on gentle waves; add a low sun, a distant shore, a bird or two, foam ticks and a soft reflection.
+- family / love: a cozy home or two close figures mid-gesture; add a small tree, chimney smoke, a heart accent, a shadow beneath.
+- home / peace: a pitched-roof house with door, window and a curl of smoke; add a path, a small tree, distant hills, grass ticks.
+- money / growth: a seed growing into a steady tree with deepening roots; add gentle hills, a low sun, a small sprout nearby — never coins-as-progress-bar.
+- health: a figure jogging or stretching on a winding path through hills; add a sprout, a leaf, a low sun, a faint calm horizon.
+- creation: an open book or easel with a pen and a flowing creative line lifting into a few stars; add an inkwell, a small plant, a desk line.
+- direction / future: a winding path over layered hills toward a rising sun or a single guiding star, with a small figure setting out.
 
 # Output
 Output ONLY the SVG, from <svg ...> to </svg>, nothing before or after. No <text>, <script>, <foreignObject>, external links, or event attributes.
@@ -372,18 +385,25 @@ export function validateWishSvg(svg: string): SVGValidationResult {
 
   const drawableCount = (safe.match(/<(path|circle|ellipse|rect|line|polyline|polygon)\b/gi) ?? []).length;
   const pathCount = (safe.match(/<path\b/gi) ?? []).length;
-  if (drawableCount < 6 || pathCount < 3) {
-    issues.push('SVG is too sparse; include a recognizable subject with details.');
+  if (drawableCount < 8 || pathCount < 3) {
+    issues.push('SVG is too sparse; build a layered little scene — a hero subject plus foreground and soft background.');
   }
-  if (drawableCount > 48) {
-    issues.push('SVG is too busy; keep the drawing calm and minimal.');
+  if (drawableCount > 64) {
+    issues.push('SVG is too busy; keep it a calm vignette, not a crowded illustration.');
   }
   if (!/stroke-linecap="round"/i.test(safe) || !/stroke-linejoin="round"/i.test(safe)) {
     issues.push('SVG should use round line caps and joins.');
   }
-  if (/fill="(?!none|transparent)[^"]+"/i.test(safe)) {
-    const filledCount = (safe.match(/fill="(?!none|transparent)[^"]+"/gi) ?? []).length;
-    if (filledCount > 3) issues.push('SVG has too many filled shapes; keep it mostly line art.');
+  // The prompt explicitly allows tiny filled dot accents (circles r ≤ 3), so
+  // only large filled shapes count against the "mostly line art" rule —
+  // otherwise a flower field's dot centers would fail an otherwise good scene.
+  const filledTags = safe.match(/<(?:path|circle|ellipse|rect|polygon|polyline)\b[^>]*\bfill="(?!none|transparent)[^"]*"[^>]*>/gi) ?? [];
+  const largeFilledCount = filledTags.filter(tag => {
+    const r = tag.match(/^<circle\b/i) ? parseFloat(tag.match(/\br="([\d.]+)"/i)?.[1] ?? '99') : 99;
+    return r > 3.5;
+  }).length;
+  if (largeFilledCount > 3) {
+    issues.push('SVG has too many filled shapes; keep it mostly line art (tiny dot accents are fine).');
   }
 
   return {
@@ -393,8 +413,103 @@ export function validateWishSvg(svg: string): SVGValidationResult {
   };
 }
 
+// Which model provider handles AI calls (classification AND SVG drawing).
+// Prefer Gemini (generous free tier) when a GEMINI_API_KEY is present;
+// otherwise fall back to Anthropic. Set neither and the route quietly uses
+// local classification + the hand-drawn template instead.
+type AIProvider = 'gemini' | 'anthropic';
+export function aiProvider(): AIProvider | null {
+  if (process.env.GEMINI_API_KEY) return 'gemini';
+  if (process.env.ANTHROPIC_API_KEY) return 'anthropic';
+  return null;
+}
+
+// One "prompt in → raw text out" model call, routed to the active provider.
+// Both providers get the exact same prompt and feed the same validation/retry
+// loop, so the art stays in one visual language regardless of who drew it.
+async function requestSvgText(prompt: string, provider: AIProvider): Promise<string> {
+  if (provider === 'gemini') {
+    return requestGeminiText(prompt, process.env.GEMINI_API_KEY!, 16000);
+  }
+  // Anthropic — Sonnet draws far better geometry than Haiku.
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+  const response = await client.messages.create({
+    model: 'claude-sonnet-5',
+    max_tokens: 2600,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  return extractTextContent(response);
+}
+
+// Google Gemini free-tier path via the REST endpoint (no extra dependency).
+//
+// Model chain (2026-07-17 artcompare round 2): gemini-3-flash draws visibly
+// better scenes than 2.5-flash — the cruise/cello/van test set went from
+// "generic / template" to "a stranger guesses the wish". Free-tier quota is
+// per-model-bucket, so we fall through the chain on 429/404 instead of dying
+// with one exhausted bucket (which used to dump every user on the domain
+// template — the main source of off-topic art). GEMINI_MODEL env still wins.
+//
+// Newer models "think" by default and the thoughts eat the output budget
+// (a small cap truncates SVGs mid-path) — so each model is tried with
+// thinking disabled first, then plain if it rejects the flag.
+const GEMINI_DRAW_CHAIN = ['gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+
+async function requestGeminiText(prompt: string, apiKey: string, maxOutputTokens: number): Promise<string> {
+  const chain = process.env.GEMINI_MODEL
+    ? [process.env.GEMINI_MODEL, ...GEMINI_DRAW_CHAIN.filter(m => m !== process.env.GEMINI_MODEL)]
+    : GEMINI_DRAW_CHAIN;
+
+  const callModel = async (model: string, disableThinking: boolean) => {
+    return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.6,
+          maxOutputTokens,
+          ...(disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+        },
+      }),
+    });
+  };
+
+  let lastError = '';
+  for (const model of chain) {
+    let res = await callModel(model, true);
+    if (!res.ok && res.status !== 429 && res.status !== 404) {
+      // Some models reject thinkingConfig outright — retry plain before failing.
+      res = await callModel(model, false);
+    }
+    if (res.status === 429 || res.status === 404) {
+      // Quota-exhausted or retired model: move to the next bucket in the chain.
+      lastError = `${model}: ${res.status}`;
+      logger.debug(`[Gemini] ${model} unavailable (${res.status}), trying next in chain`);
+      continue;
+    }
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new AIError(`Gemini API error ${res.status}: ${body.slice(0, 200)}`, 'GEMINI_ERROR');
+    }
+    const data = await res.json();
+    const parts = data?.candidates?.[0]?.content?.parts;
+    const text = Array.isArray(parts)
+      ? parts.map((p: { text?: string }) => p?.text).filter(Boolean).join('')
+      : '';
+    if (!text) {
+      throw new AIError('Gemini returned no text', 'INVALID_RESPONSE');
+    }
+    return text;
+  }
+  throw new AIError(`All Gemini models exhausted (${lastError})`, 'GEMINI_QUOTA');
+}
+
 /**
- * Generate SVG visualization using Claude AI
+ * Generate SVG visualization using the active AI provider (Gemini or Claude).
  * @param description - The wish description to visualize
  * @returns SVG string and success status
  */
@@ -406,29 +521,20 @@ export async function generateWishSVGWithAI(description: string): Promise<SVGGen
     return { svg: '', success: false, error: 'Description too short' };
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    logger.debug('[SVG Generator] Error: API key not configured');
+  const provider = aiProvider();
+  if (!provider) {
+    logger.debug('[SVG Generator] Error: no provider configured');
     return { svg: '', success: false, error: 'API key not configured' };
   }
 
-  const client = new Anthropic({ apiKey });
-
   try {
-    logger.debug('[SVG Generator] Calling Claude API (single Sonnet pass)...');
+    logger.debug(`[SVG Generator] Calling ${provider} for SVG...`);
     const startTime = Date.now();
 
-    // Sonnet draws far better geometry than Haiku, and one direct call is
-    // faster than the old scene-spec + draw two-step. Template fallback in the
-    // route covers the rare miss, so a model error here is never fatal.
-    async function requestSvg(prompt: string) {
-      const response = await client.messages.create({
-        model: 'claude-sonnet-5',
-        max_tokens: 2600,
-        messages: [{ role: 'user', content: prompt }],
-      });
-      return extractTextContent(response);
-    }
+    // One direct "prompt in → SVG out" call, routed to whichever provider has a
+    // key. Template fallback in the route covers the rare miss, so a model
+    // error here is never fatal.
+    const requestSvg = (prompt: string) => requestSvgText(prompt, provider);
 
     let raw = await requestSvg(buildSvgPrompt(SVG_GENERATION_PROMPT, description));
     logger.debug('[SVG Generator] Raw response length:', raw.length);

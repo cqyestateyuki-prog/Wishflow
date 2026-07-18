@@ -26,6 +26,7 @@ export type Wish = {
   keywords: string[] | null;              // AI-extracted keywords for SVG
   mood: WishMood | null;                  // Mood for SVG animation
   line_seed: string | null;               // Seed for consistent SVG generation
+  user_image?: string | null;             // User-uploaded drawing (compressed data URL); overrides AI art, revertible. Local-only, like svg_data.
   pinned: boolean | null;
   last_connected_at: string | null;
   last_level: string | null;

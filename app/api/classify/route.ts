@@ -5,10 +5,15 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { classifyWish, classifyWishLocal, generateWishSVGWithAI, AIError } from '@/lib/ai';
+import { classifyWish, classifyWishLocal, generateWishSVGWithAI, aiProvider, AIError } from '@/lib/ai';
 import { generateWishSVG, renderSVGToString } from '@/lib/svgGenerator';
+import { checkSvgQuota } from '@/lib/svgQuota';
 import { WishDomain, WishMood } from '@/lib/types';
 import { logger } from "@/lib/logger";
+
+// True when any SVG-drawing provider is configured (Gemini free tier or Anthropic).
+const hasAIProvider = () =>
+  !!(process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY);
 export async function POST(request: NextRequest) {
   logger.debug('[API /classify] Request received');
 
@@ -48,16 +53,24 @@ export async function POST(request: NextRequest) {
     let classification;
     let classificationSource = 'local';
 
-    // Use local classification if requested or if API key is not set
-    if (useLocal || !process.env.ANTHROPIC_API_KEY) {
+    // Use local classification if requested or if no AI provider is configured.
+    // An AI classification FAILURE must only degrade classification itself —
+    // never abort the request, so SVG generation below still gets its chance.
+    const provider = aiProvider();
+    if (useLocal || !provider) {
       logger.debug('[API /classify] Using local classification');
       classification = classifyWishLocal(description, language);
       classificationSource = 'local';
     } else {
-      // Use Claude API for classification
-      logger.debug('[API /classify] Using Claude API for classification');
-      classification = await classifyWish(description, language);
-      classificationSource = 'claude';
+      logger.debug(`[API /classify] Using ${provider} for classification`);
+      try {
+        classification = await classifyWish(description, language);
+        classificationSource = provider;
+      } catch (err) {
+        logger.error('[API /classify] AI classification failed, degrading to local:', err);
+        classification = classifyWishLocal(description, language);
+        classificationSource = 'local';
+      }
     }
 
     logger.debug('[API /classify] Classification result:', {
@@ -72,12 +85,30 @@ export async function POST(request: NextRequest) {
     let svgFallback = false;
     let svgQualityIssues: string[] | undefined;
     let sceneSpec;
+    let quotaExceeded = false;
+    let quota: { used: number; limit: number } | undefined;
 
     if (generateSVG) {
       logger.debug('[API /classify] Starting SVG generation...');
-      
-      // Try AI-powered SVG generation first
-      if (process.env.ANTHROPIC_API_KEY && !useLocal) {
+
+      // AI drawing runs only when a provider is set and the user hasn't hit their
+      // daily quota. Anything else (no provider, local mode, quota reached) draws
+      // the hand-drawn template — never a blocked / empty state.
+      let allowGeneration = hasAIProvider() && !useLocal;
+
+      if (allowGeneration) {
+        const q = await checkSvgQuota(request);   // null → fail open (unmetered)
+        if (q) {
+          quota = { used: q.used, limit: q.limit };
+          if (!q.allowed) {
+            allowGeneration = false;
+            quotaExceeded = true;
+            logger.debug('[API /classify] Daily SVG quota reached, using template');
+          }
+        }
+      }
+
+      if (allowGeneration) {
         const svgResult = await generateWishSVGWithAI(description);
         sceneSpec = svgResult.sceneSpec;
         svgQualityIssues = svgResult.validationIssues;
@@ -87,30 +118,24 @@ export async function POST(request: NextRequest) {
         } else {
           // Fallback to domain-based template
           logger.debug('[API /classify] AI SVG failed, using fallback:', svgResult.error);
-          const templateSVG = generateWishSVG(
-            classification.domain as WishDomain,
-            classification.mood as WishMood,
-            description
+          svg = renderSVGToString(
+            generateWishSVG(classification.domain as WishDomain, classification.mood as WishMood, description)
           );
-          svg = renderSVGToString(templateSVG);
           svgFallback = true;
         }
       } else {
-        // No API key, use template directly
-        logger.debug('[API /classify] No API key, using template SVG');
-        const templateSVG = generateWishSVG(
-          classification.domain as WishDomain,
-          classification.mood as WishMood,
-          description
+        // No provider, local mode, or quota reached → template directly.
+        svg = renderSVGToString(
+          generateWishSVG(classification.domain as WishDomain, classification.mood as WishMood, description)
         );
-        svg = renderSVGToString(templateSVG);
         svgFallback = true;
       }
-      
-      logger.debug('[API /classify] SVG result:', { 
-        svgLength: svg?.length, 
+
+      logger.debug('[API /classify] SVG result:', {
+        svgLength: svg?.length,
         svgFallback,
         svgQualityIssues,
+        quotaExceeded,
       });
     }
 
@@ -118,7 +143,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ...classification,
       source: classificationSource,
-      ...(generateSVG && { svg, svgFallback, sceneSpec, svgQualityIssues }),
+      ...(generateSVG && { svg, svgFallback, sceneSpec, svgQualityIssues, quotaExceeded, quota }),
     });
 
   } catch (error) {
