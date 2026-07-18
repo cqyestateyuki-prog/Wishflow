@@ -84,11 +84,13 @@
   animation: none;
 }
 
-/* A boat riding its own slow swell */
+/* A paper crane riding its own slow swell. Origin is the waterline (bottom
+   of the glyph box) so the tall wing rocks about the hull instead of the
+   wingtip swinging wide. */
 .boatBob {
   animation: wmBoatBob 5s ease-in-out infinite;
   transform-box: fill-box;
-  transform-origin: center;
+  transform-origin: center bottom;
 }
 
 @keyframes wmBoatBob {

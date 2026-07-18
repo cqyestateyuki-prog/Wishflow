@@ -63,35 +63,57 @@ function normalizeStage(stage: string | null): string {
 // Max horizontal spacing between boats sharing one life stage
 const STOP_SPACING = 120;
 
-// Each wish is a little paper boat set onto the river — like river lanterns
-// released downstream, but boats. Connection depth = presence on the water:
-// minimum drifts pale and small, normal sails in ink, deep carries a warm
-// lantern glow on the water around it.
-function BoatGlyph({ level }: { level: string | null }) {
+// Each wish is a folded origami paper crane (千纸鹤) set upon the river — a
+// paper crane floated downstream, the way lanterns are released on water.
+// Connection depth = presence on the water: minimum drifts pale and small,
+// normal sails in ink, deep carries a warm lantern glow on the water around
+// it, its reflection rippling. The silhouette is all crisp straight folds
+// meeting at sharp creases — that angular geometry is what reads as origami.
+function CraneGlyph({ level }: { level: string | null }) {
   const deep = level === 'deep';
   const mid = level === 'normal';
   const stroke = deep ? '#4A3D70' : mid ? '#5B4B84' : '#8B7BB0';
   const sw = deep ? 1.35 : mid ? 1.2 : 1.05;
-  // Boats are small cards, not dots — the river carries them, not pins them
+  // Cranes are small paper cards, not dots — the river carries them, not pins them
   const s = (deep ? 1.16 : mid ? 1 : 0.88) * 2.2;
   return (
     <g transform={`scale(${s})`}>
-      {deep && <ellipse cx="0" cy="3" rx="22" ry="10" fill="url(#rm-lantern)" />}
-      {/* hull */}
+      {deep && <ellipse cx="0" cy="4" rx="22" ry="10" fill="url(#rm-lantern)" />}
+      {/* curved ripple reflection on the water — two gentle arcs, not underlines */}
       <path
-        d="M -15 0 L -9 8 Q 0 11.5 9 8 L 15 0 Z"
+        d="M -12 13 Q -6 15.5 0 13"
+        fill="none" stroke={stroke} strokeWidth={1.1} opacity={0.35} strokeLinecap="round"
+      />
+      <path
+        d="M 4 15 Q 10 17.5 16 15"
+        fill="none" stroke={stroke} strokeWidth={1.1} opacity={0.35} strokeLinecap="round"
+      />
+      {/* tail — a slim folded flap sweeping up-back; drawn first so the body
+          fill tucks its base cleanly under the crease line */}
+      <path
+        d="M -4 -7 L -14 -18 L -9 -7"
         fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
       />
-      {/* the folded paper peak */}
+      {/* body — the folded diamond sitting on the waterline (touches at ±) */}
       <path
-        d="M -15 0 L -3.5 0 L 0 -9 L 3.5 0 L 15 0"
+        d="M -12 0 L -4 -7 L 10 -7 L 16 0 Z"
         fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
       />
-      {(mid || deep) && <circle cx="0" cy="-3.4" r="1.5" fill={stroke} />}
-      {/* broken reflection on the water */}
+      {/* wing — the tall proud triangle rising from the body's center (open
+          base: no doubled line across the body top) */}
       <path
-        d="M -10 14 L -4 14 M 3 15.5 L 11 15.5"
-        stroke={stroke} strokeWidth="1.2" opacity="0.35" strokeLinecap="round"
+        d="M -2 -7 L 2 -27 L 8 -7"
+        fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
+      />
+      {/* slender neck rising forward to the folded head, with a tiny beak tick */}
+      <path
+        d="M 10 -7 L 18 -20 L 19 -14 M 18 -20 L 22 -21"
+        fill="none" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
+      />
+      {/* interior fold crease across the body — the line that sells the paper */}
+      <path
+        d="M -4 -7 L 6 0"
+        fill="none" stroke="#8B7BB0" strokeWidth={sw * 0.8} opacity={0.5} strokeLinecap="round"
       />
     </g>
   );
@@ -142,7 +164,7 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
       // stage can never overlap its names
       const side = indexInColumn % 2 === 0 ? -1 : 1;
       const tier = Math.floor(indexInColumn / 2) % 3;
-      // Each boat rides its own slow swell, in its own lane of the waterway
+      // Each crane rides its own slow swell, in its own lane of the waterway
       const seed = Array.from(wish.id).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
       const lane = LANES[(indexInColumn + (seed % 2)) % LANES.length] + ((seed % 5) - 2) * 3;
       return {
@@ -154,7 +176,7 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
         position: { cx, cy: river.yAt(cx) + lane },
       };
     });
-    // Boats share the waterway, never a berth
+    // Cranes share the waterway, never a berth
     resolveCollisions(out.map(p => p.position), 80);
     return out;
   }, [wishes, wishesByColumn, river]);
@@ -270,7 +292,7 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
             ))}
           </g>
 
-          {/* Paper boats on the water — hover dims the others */}
+          {/* Paper cranes on the water — hover dims the others */}
           <g className={styles.starsGroup}>
             {wishPositions.map(({ wish, side, tier, bobDur, bobDelay, position }) => {
               const isActive = selectedWishId === wish.id;
@@ -288,7 +310,7 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
                       className={styles.boatBob}
                       style={{ animationDuration: `${bobDur}s`, animationDelay: `${bobDelay}s` }}
                     >
-                      <BoatGlyph level={wish.last_level} />
+                      <CraneGlyph level={wish.last_level} />
                     </g>
                   </g>
                   <circle
