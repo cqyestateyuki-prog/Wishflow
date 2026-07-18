@@ -113,7 +113,8 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Wishflow · Product Case Study</p>
   <h1>A navigation system for wishes, not tasks.</h1>
-  <p class="lead" style="margin-top:22px">Wishflow is a small web app for wishes that take decades, not weeks. Each one gets drawn as a single hand-drawn line and then stays with you. This case study covers the thinking behind it: who it's for, why it works the way it does, and how we taught an AI to draw like this.</p>
+  <p style="font-family:var(--serif); font-style:italic; font-size:clamp(17px,1.6vw,21px); color:var(--wish); margin-top:14px">"Let the wish slowly take shape."</p>
+  <p class="lead" style="margin-top:18px">Wishflow is a small web app for wishes that take decades, not weeks. Each one gets drawn as a single hand-drawn line and then stays with you. This case study covers the thinking behind it: who it's for, why it works the way it does, and how we taught an AI to draw like this.</p>
   <div class="cols" style="max-width:760px">
     ${art(after.cruise?.svg, '"Take a cruise trip with my mom and dad" — a wish portrait, generated live by the production pipeline', true)}
   </div>
@@ -133,11 +134,12 @@ const html = `<!doctype html>
   <h2>Nobody has a good place to keep a wish.</h2>
   <p class="lead">Most people keep their biggest wishes in the worst places: sticky notes, chat logs with themselves, a notes app they're afraid to open. That's fine for groceries and terrible for something you'll carry for ten years. The goal apps that should help came up in our interviews mostly as the reason people quit:</p>
   <ul class="points">
-    <li><b>"I wrote it down, and then I was scared to open the note again."</b> The note stops being a wish and turns into a list of everything you haven't done yet.</li>
-    <li><b>Seeing a stranger further along on the same goal</b> was enough to make several people abandon theirs entirely.</li>
-    <li><b>Miss a week because life happened, and the app shows a broken streak.</b> People in this group didn't restart after that. They uninstalled.</li>
+    <li><b>"I write the wish down — and then I don't dare look at it again."</b> The note turns into a list of everything you haven't done yet.</li>
+    <li><b>"One look at someone else doing better, and I want to give up."</b> Comparison came up in interviews more often than failure did.</li>
+    <li><b>"One low mood, and my whole life goes offline."</b> The app shows a broken streak. People in this group didn't restart. They uninstalled.</li>
   </ul>
-  <p class="quote">Goal apps exist to close tasks. A ten-year wish was never supposed to be closed.</p>
+  <p class="lead" style="margin-top:22px">The pattern under all three: goal apps exist to close tasks, and a ten-year wish was never supposed to be closed.</p>
+  <p class="quote">It's not that you can't. It's that you're too real.</p>
   <div class="pageno">02</div>
 </section>
 
@@ -168,7 +170,7 @@ const html = `<!doctype html>
       </ul>
     </div>
   </div>
-  <p class="lead" style="margin-top:26px">So we took the machinery out: <b>no scores, no rankings, no comparisons, no failure states anywhere.</b> The app holds the structure so the user doesn't have to.</p>
+  <p class="lead" style="margin-top:26px">So we took the machinery out: <b>no scores, no rankings, no comparisons, no failure states anywhere.</b> The original spec says it best: the system carries the structure — the user is only responsible for existing and feeling.</p>
   <div class="pageno">03</div>
 </section>
 
@@ -193,10 +195,11 @@ const html = `<!doctype html>
     <div class="stage"><b>50+</b><span>looking back — the life map becomes visible</span></div>
   </div>
   <ul class="points">
-    <li><b>A wish here works more like a relationship than a goal.</b> It can sit untouched for years and nothing bad happens to it. Nothing gets deleted.</li>
+    <li><b>"A wish is not a task — it's a relationship."</b> It can sit untouched for years and nothing bad happens to it. Nothing gets deleted.</li>
     <li><b>The wording is allowed to change.</b> "Earn 25k" becomes "stable freedom" as the person grows up — and the original stays saved, like a photo from that year.</li>
     <li><b>There is exactly one question in the whole app:</b> when did you last connect with this wish?</li>
   </ul>
+  <p class="quote">A wish is allowed to pause, to change shape, to move slowly.</p>
   <div class="pageno">04</div>
 </section>
 
@@ -226,6 +229,7 @@ const html = `<!doctype html>
     <li><b>The app records one thing: when you last connected.</b> There's no streak, no completion rate, nothing that can break.</li>
     <li><b>Come back after three quiet months and it says "you came back."</b> Not "you broke a 41-day streak."</li>
   </ul>
+  <p class="quote">A wish doesn't disappear just because the line went quiet.</p>
   <div class="pageno">05</div>
 </section>
 
@@ -233,13 +237,13 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Design Philosophy</p>
   <h2>In the age of flawless AI images, we stopped the pen at one-tenth.</h2>
-  <p class="lead">Anyone can generate a flawless image now, which means a flawless image says nothing. Our users already scroll past hundreds of perfect renders a day and feel a little worse after each one. So Wishflow goes the other way: every wish is one wobbly ink line on warm paper, like something scribbled in a notebook margin. We had three reasons, and none of them was budget:</p>
+  <p class="lead">AI made "polished" free. Anyone can render a flawless image in seconds now, so a flawless image says nothing — and our users already scroll past hundreds of them a day, feeling a little worse each time. So Wishflow goes the other way: every wish is one wobbly, trembling ink line on warm paper, like a doodle in the corner of your own notebook. A wish isn't a product to be rendered complete to prove its worth; it's a relationship, kept gently, for a long time — and its most precious part is what's left undrawn. Three reasons, none of them budget:</p>
   <ul class="points">
-    <li><b>It feels human.</b> A hyperreal render is performing for you; it wants a reaction. A wobbly line isn't trying to impress anyone — which is exactly what makes it safe to look at every day, the way a page of your own notebook is safe.</li>
-    <li><b>It leaves room.</b> A finished render decides what your future looks like, down to the light fixtures. A line drawing settles maybe a tenth of it, and the rest stays yours to imagine. Ten years later the same drawing can mean something new — a render can't do that, because it's already full.</li>
+    <li><b>It feels human.</b> A hyperreal render performs; a hand-drawn line just keeps you company. It's a page from your journal, not a poster to be liked. Your wish is cherished, not inspected.</li>
+    <li><b>It leaves room.</b> A finished render decides what your future looks like, down to the light fixtures. A line drawing settles maybe a tenth of it, and the rest — the boat, the house, the future not yet arrived — stays yours to imagine. The wish stays malleable, alive, yours.</li>
     <li><b>You can join in.</b> Nobody looks at a polished render and thinks "I could make that." A simple line says: you could draw this too. So users can upload their own sketches, and they hang next to the AI's with no visible seam.</li>
   </ul>
-  <p class="quote">Restraint isn't absence. Restraint is the design.</p>
+  <p class="quote">Wishflow stops the pen at one-tenth — the other nine-tenths were always yours to imagine, to finish, to own. Restraint isn't absence; restraint is the design.</p>
   <div class="pageno">06</div>
 </section>
 
@@ -259,7 +263,7 @@ const html = `<!doctype html>
         <path d="M 118 56 L 172 72" stroke="#6B5C8E" stroke-width="1" opacity=".5"/>
       </svg>
       <b>Wish Galaxy — the wide view</b>
-      <p>Every wish you've ever made, laid out by life stage. You open it to feel one thing: it's all still here.</p>
+      <p>Like looking up at the night sky. Every wish still there, laid out by life stage: "my wishes are all still here — I haven't failed."</p>
     </div>
     <div class="room">
       <svg viewBox="0 0 240 130">
@@ -271,7 +275,7 @@ const html = `<!doctype html>
         <path d="M 96 84 Q 106 88 116 84" fill="none" stroke="#8B7BB0" stroke-width="1.1" opacity=".5"/>
       </svg>
       <b>Life River — the daily view</b>
-      <p>At most three wishes drift by per day. A two-minute connection counts as moving.</p>
+      <p>Like walking along a river. At most three wishes drift by a day, and the smallest connection counts as moving.</p>
     </div>
     <div class="room">
       <svg viewBox="0 0 240 130">
@@ -283,7 +287,7 @@ const html = `<!doctype html>
         <circle cx="136" cy="98" r="3" fill="#6B5C8E" opacity=".7"/>
       </svg>
       <b>Wish Card — one wish, up close</b>
-      <p>A drawing you can open, sit with, and manifest. There's no checkbox on it anywhere.</p>
+      <p>The "relationship license" between you and a wish — a drawing you can open, sit with, and manifest. No checkbox anywhere.</p>
     </div>
   </div>
   <div class="pageno">07</div>
@@ -379,7 +383,8 @@ const html = `<!doctype html>
     <li><b>Design for the quota wall.</b> On free tiers, the fallback chain isn't plumbing — it's the reason no user ever sees a template.</li>
     <li><b>Motion is vocabulary.</b> Only water, smoke, clouds and starlight move, and slowly. The subject holds still.</li>
   </ul>
-  <p class="manifesto">Wishflow doesn't help you get anywhere faster. It just makes sure you never lose sight of where you wanted to go.</p>
+  <p class="manifesto">Wishflow doesn't get you there faster. It makes sure that, over a whole life, you never leave the direction you wanted to go.</p>
+  <p style="font-family:var(--serif); font-style:italic; font-size:16.5px; color:var(--text); margin-top:18px">Take your time. The wish isn't going anywhere.</p>
   <div class="footline">Wishflow · 2026 — drawings in this deck are live SVG, animated as shipped</div>
   <div class="pageno">13</div>
 </section>
