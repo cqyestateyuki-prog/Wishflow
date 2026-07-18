@@ -18,7 +18,8 @@ type WishVisualizationProps = {
   wish: LocalWish;
   size?: 'small' | 'medium' | 'large';
   showAnimation?: boolean;
-  onClick?: () => void;
+  // Receives the click event so callers can FLIP-zoom from this element's rect
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 };
 
 // Default values for older wishes without new fields
@@ -31,25 +32,28 @@ export default function WishVisualization({
   showAnimation = true,
   onClick,
 }: WishVisualizationProps) {
-  // Check if wish has AI-generated SVG data
-  const hasAISVG = Boolean(wish.svg_data);
+  // Highest priority: a drawing the user uploaded themselves
+  const hasUserImage = Boolean(wish.user_image);
 
-  // Generate fallback SVG based on wish properties (only if no AI SVG)
+  // Check if wish has AI-generated SVG data
+  const hasAISVG = !hasUserImage && Boolean(wish.svg_data);
+
+  // Generate fallback SVG based on wish properties (only if no user image / AI SVG)
   const fallbackSvg = useMemo(() => {
-    if (hasAISVG) return null;
+    if (hasUserImage || hasAISVG) return null;
     
     const domain = (wish.domain as WishDomain) || DEFAULT_DOMAIN;
     const mood = (wish.mood as WishMood) || DEFAULT_MOOD;
     const seed = wish.line_seed || wish.title || wish.id;
-    
+
     return generateWishSVG(domain, mood, seed);
-  }, [hasAISVG, wish.domain, wish.mood, wish.line_seed, wish.title, wish.id]);
+  }, [hasUserImage, hasAISVG, wish.domain, wish.mood, wish.line_seed, wish.title, wish.id]);
 
   // Size configurations
   const sizeConfig = {
     small: { maxWidth: 120, padding: 8 },
     medium: { maxWidth: 200, padding: 12 },
-    large: { maxWidth: 320, padding: 16 },
+    large: { maxWidth: 430, padding: 16 },
   };
 
   const config = sizeConfig[size];
@@ -136,8 +140,21 @@ export default function WishVisualization({
       }}
       onClick={onClick}
     >
-      {/* Prioritize AI-generated SVG */}
-      {hasAISVG && wish.svg_data ? (
+      {/* Highest priority: the user's own drawing. Multiply blend drops a white-paper
+          photo's background to the paper tone, so it reads as ink-on-paper like the AI art. */}
+      {hasUserImage && wish.user_image ? (
+        <img
+          src={wish.user_image}
+          alt={wish.title}
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+            mixBlendMode: 'multiply',
+          }}
+          className="wish-user-image"
+        />
+      ) : hasAISVG && wish.svg_data ? (
         <div 
           dangerouslySetInnerHTML={{ __html: wish.svg_data }}
           style={{ width: '100%', display: 'flex', justifyContent: 'center' }}

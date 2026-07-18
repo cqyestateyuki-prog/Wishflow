@@ -6,14 +6,16 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { LocalWish, LocalConnection } from '@/lib/localStore';
+import { useState, useEffect, useRef } from 'react';
+import { LocalWish, LocalConnection, wishStore } from '@/lib/localStore';
+import { fileToCompressedDataUrl } from '@/lib/imageUpload';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useWishConnections } from '@/hooks/useLocalConnections';
 import { CONNECTION_LEVELS, getWishWhisper, getMinimumConnection, DOMAINS, STAGES } from '@/lib/constants';
 import { ConnectionIcon, PinIcon, PinIconSolid } from '../Icons';
 import ConnectionButtons from './ConnectionButtons';
 import WishVisualization from './WishVisualization';
+import WishSpace from '@/components/WishSpace';
 import styles from './WishCard.module.css';
 
 type WishDetailProps = {
@@ -21,6 +23,7 @@ type WishDetailProps = {
   onClose: () => void;
   onConnect?: (wishId: string, level: string, note?: string) => void;
   onPinToggle?: (wishId: string) => void;
+  onWishChange?: () => void;
 };
 
 // Format date for display
@@ -62,7 +65,7 @@ function getStageLabel(stage: string | null, language: string): string {
   return stage;
 }
 
-export default function WishDetail({ wish, onClose, onConnect, onPinToggle }: WishDetailProps) {
+export default function WishDetail({ wish, onClose, onConnect, onPinToggle, onWishChange }: WishDetailProps) {
   const { language } = useLanguage();
   const { connections, loading } = useWishConnections(wish.id);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
@@ -70,17 +73,59 @@ export default function WishDetail({ wish, onClose, onConnect, onPinToggle }: Wi
   const [connecting, setConnecting] = useState(false);
   const [connectionNotice, setConnectionNotice] = useState('');
 
+  // User-uploaded drawing. Local state gives instant feedback in the modal;
+  // wishStore.update persists it and onWishChange refreshes the parent list.
+  const [userImage, setUserImage] = useState<string | null>(wish.user_image ?? null);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Meditation space, opened by tapping the artwork; rect = zoom origin
+  const [spaceRect, setSpaceRect] = useState<DOMRect | null>(null);
+
+  // Reset when a different wish is opened in the same modal instance
+  useEffect(() => {
+    setUserImage(wish.user_image ?? null);
+    setImageError('');
+  }, [wish.id, wish.user_image]);
+
+  const handleImagePick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-picking the same file
+    if (!file) return;
+    setImageBusy(true);
+    setImageError('');
+    try {
+      const dataUrl = await fileToCompressedDataUrl(file);
+      wishStore.update(wish.id, { user_image: dataUrl });
+      setUserImage(dataUrl);
+      onWishChange?.();
+    } catch {
+      setImageError(language === 'zh' ? '这张图没读出来，换一张试试。' : "Couldn't read that image — try another.");
+    } finally {
+      setImageBusy(false);
+    }
+  };
+
+  const handleImageRevert = () => {
+    wishStore.update(wish.id, { user_image: null });
+    setUserImage(null);
+    setImageError('');
+    onWishChange?.();
+  };
+
   const whisper = getWishWhisper(wish, language as 'en' | 'zh');
   const minConnection = getMinimumConnection(wish.domain, language as 'en' | 'zh');
 
-  // Close on escape key
+  // Close on escape key — unless the meditation space is open on top;
+  // its own Escape handler closes just the space, the modal stays.
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape' && !spaceRect) onClose();
     };
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+  }, [onClose, spaceRect]);
 
   const handleConnect = async () => {
     if (!selectedLevel || !onConnect) return;
@@ -108,9 +153,67 @@ export default function WishDetail({ wish, onClose, onConnect, onPinToggle }: Wi
           <button className={styles.closeButton} onClick={onClose}>×</button>
         </div>
 
-        {/* Visualization */}
-        <div style={{ marginBottom: 20, display: 'grid', placeItems: 'center' }}>
-          <WishVisualization wish={wish} size="large" />
+        {/* Visualization — the user's own drawing takes priority when present.
+            Tapping it zooms into the meditation space. */}
+        <div style={{ marginBottom: 4, display: 'grid', placeItems: 'center' }}>
+          <WishVisualization
+            wish={{ ...wish, user_image: userImage }}
+            size="large"
+            onClick={(e) => setSpaceRect(e.currentTarget.getBoundingClientRect())}
+          />
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--text)', opacity: 0.6, textAlign: 'center', margin: '0 0 12px' }}>
+          {language === 'zh' ? '点一下画，走进去待一会儿。' : 'Tap the drawing to step inside for a while.'}
+        </p>
+
+        {/* Draw-it-yourself: upload your own line, in the same visual language */}
+        <div
+          style={{
+            marginBottom: 20,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImagePick}
+            style={{ display: 'none' }}
+          />
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              className={styles.actionBtn}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={imageBusy}
+              style={{ flex: 'none', padding: '8px 14px', fontSize: 12 }}
+            >
+              {imageBusy
+                ? (language === 'zh' ? '放进来…' : 'Adding…')
+                : userImage
+                  ? (language === 'zh' ? '换一张我画的' : 'Replace my drawing')
+                  : (language === 'zh' ? '上传我画的图' : 'Upload my drawing')}
+            </button>
+            {userImage && (
+              <button
+                className={styles.actionBtn}
+                onClick={handleImageRevert}
+                disabled={imageBusy}
+                style={{ flex: 'none', padding: '8px 14px', fontSize: 12 }}
+              >
+                {language === 'zh' ? '还原成生成的图' : 'Back to generated'}
+              </button>
+            )}
+          </div>
+          <p style={{ fontSize: 11, color: 'var(--text)', opacity: 0.7, textAlign: 'center', margin: 0 }}>
+            {imageError
+              ? imageError
+              : userImage
+                ? (language === 'zh' ? '这是你亲手画的。' : "This one's yours.")
+                : (language === 'zh' ? '也可以亲手画一张，塞进来。' : 'Or draw one yourself and drop it in.')}
+          </p>
         </div>
 
         {/* Description (if available) */}
@@ -264,6 +367,15 @@ export default function WishDetail({ wish, onClose, onConnect, onPinToggle }: Wi
           </button>
         </div>
       </div>
+
+      {/* Meditation space — portals to <body>, floats above the modal */}
+      {spaceRect && (
+        <WishSpace
+          wish={{ ...wish, user_image: userImage }}
+          originRect={spaceRect}
+          onClose={() => setSpaceRect(null)}
+        />
+      )}
     </div>
   );
 }
