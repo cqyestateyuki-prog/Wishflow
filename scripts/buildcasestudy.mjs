@@ -113,7 +113,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Wishflow · Product Case Study</p>
   <h1>A navigation system for wishes, not tasks.</h1>
-  <p class="lead" style="margin-top:22px">Wishflow keeps a person's wishes alive across decades — drawn in one trembling ink line, connected to gently, never graded. This is why we built it, who it protects, and why it refuses to look like anything else the AI era produces.</p>
+  <p class="lead" style="margin-top:22px">Wishflow is a small web app for wishes that take decades, not weeks. Each one gets drawn as a single hand-drawn line and then stays with you. This case study covers the thinking behind it: who it's for, why it works the way it does, and how we taught an AI to draw like this.</p>
   <div class="cols" style="max-width:760px">
     ${art(after.cruise?.svg, '"Take a cruise trip with my mom and dad" — a wish portrait, generated live by the production pipeline', true)}
   </div>
@@ -130,14 +130,14 @@ const html = `<!doctype html>
 <!-- 02 · Problem discovery -->
 <section>
   <p class="eyebrow">Problem Discovery</p>
-  <h2>Wishes don't fail. Tools fail them.</h2>
-  <p class="lead">Life-level wishes usually live on sticky notes and in chat threads — places that can't hold years of emotional weather. And the tools built for "goals" make it worse. In interviews and in our own lives, the same three moments kept surfacing:</p>
+  <h2>Nobody has a good place to keep a wish.</h2>
+  <p class="lead">Most people keep their biggest wishes in the worst places: sticky notes, chat logs with themselves, a notes app they're afraid to open. That's fine for groceries and terrible for something you'll carry for ten years. The goal apps that should help came up in our interviews mostly as the reason people quit:</p>
   <ul class="points">
-    <li><b>You write a wish down, then never dare look at it again.</b> The note has become a mirror of everything you haven't done.</li>
-    <li><b>One glance at someone else's progress and you want to quit.</b> Comparison kills the wish faster than failure ever did.</li>
-    <li><b>One low week, and the streak dies.</b> The tool calls it failure. You call it being a person — and you leave.</li>
+    <li><b>"I wrote it down, and then I was scared to open the note again."</b> The note stops being a wish and turns into a list of everything you haven't done yet.</li>
+    <li><b>Seeing a stranger further along on the same goal</b> was enough to make several people abandon theirs entirely.</li>
+    <li><b>Miss a week because life happened, and the app shows a broken streak.</b> People in this group didn't restart after that. They uninstalled.</li>
   </ul>
-  <p class="quote">Productivity tools are built to close tasks. A life-level wish is not a task to close.</p>
+  <p class="quote">Goal apps exist to close tasks. A ten-year wish was never supposed to be closed.</p>
   <div class="pageno">02</div>
 </section>
 
@@ -145,7 +145,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">The User</p>
   <h2>Designed for the highly sensitive.</h2>
-  <p class="lead">Wishflow is for highly sensitive people (HSP) and P-types — people who feel deeply, resist rigid plans, and are easily knocked off course by comparison, mood, and environment. This isn't a niche of "weak users": it's a population the entire productivity industry quietly optimizes against. The same mechanics read completely differently to them:</p>
+  <p class="lead">Wishflow is built for highly sensitive people, and for the plan-averse (MBTI would call them P types). They feel a lot, notice everything, and a bad week can take a wish offline for months. It's a much bigger group than the industry admits — and most productivity mechanics were designed by, and for, the other kind of person. The same features land very differently here:</p>
   <div class="compare">
     <div>
       <p class="colnote them">For a typical productivity user</p>
@@ -161,14 +161,14 @@ const html = `<!doctype html>
       <p class="colnote us">For a highly sensitive user</p>
       <ul>
         <li><b>Streaks threaten</b> — every day is a chance to break something</li>
-        <li><b>Deadlines paralyze</b> — pressure disconnects them from wanting</li>
-        <li><b>Progress bars judge</b> — 12% reads as "you are 88% behind"</li>
-        <li><b>Metrics feel like surveillance</b> of their inner life</li>
-        <li><b>A failure state wounds</b> — and they don't restart. They leave.</li>
+        <li><b>Deadlines paralyze</b> — under pressure, they stop wanting the thing at all</li>
+        <li><b>Progress bars judge</b> — 12% mostly reads as "88% left"</li>
+        <li><b>Metrics feel like being watched</b> — the inner life doesn't want a dashboard</li>
+        <li><b>A failure state wounds</b> — they don't restart, they leave</li>
       </ul>
     </div>
   </div>
-  <p class="lead" style="margin-top:26px">So the rules here are different: <b>no evaluation, no ranking, no comparison, no failure states.</b> The system carries the structure; the user only has to exist and feel.</p>
+  <p class="lead" style="margin-top:26px">So we took the machinery out: <b>no scores, no rankings, no comparisons, no failure states anywhere.</b> The app holds the structure so the user doesn't have to.</p>
   <div class="pageno">03</div>
 </section>
 
@@ -176,7 +176,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">The Insight</p>
   <h2>Wishes are non-linear.</h2>
-  <p class="lead">For this audience, life is not a straight line, and wishes do not complete on an annual plan. A real wish can sleep for six years and wake up changed. So Wishflow abandoned the calendar: its unit of time is the <b>life stage</b>, and its unit of progress is not completion — it's <b>connection</b>.</p>
+  <p class="lead">The people we designed for don't move through life in a straight line, and their wishes don't finish on schedule. A real wish can go quiet for six years and come back changed. So the app doesn't count days at all. It thinks in <b>life stages</b>, and instead of completion it tracks one much softer thing: <b>whether you're still in touch</b>.</p>
   <svg viewBox="0 0 640 100" style="max-width:640px;margin-top:26px" aria-hidden="true">
     <path d="M 10 26 H 560" stroke="#C9C2D6" stroke-width="1.6" stroke-dasharray="7 7" fill="none"/>
     <path d="M 556 20 L 566 26 L 556 32" stroke="#C9C2D6" stroke-width="1.6" fill="none" stroke-linecap="round"/>
@@ -193,9 +193,9 @@ const html = `<!doctype html>
     <div class="stage"><b>50+</b><span>looking back — the life map becomes visible</span></div>
   </div>
   <ul class="points">
-    <li><b>A wish is a relationship object, not a goal.</b> It may pause for years. It is never deleted.</li>
-    <li><b>Its wording evolves</b> — "earn 25k" becomes "stable freedom" — while its first form is kept, as memory.</li>
-    <li><b>So nothing here asks "is it done?"</b> The only question the product ever asks: are you still connected?</li>
+    <li><b>A wish here works more like a relationship than a goal.</b> It can sit untouched for years and nothing bad happens to it. Nothing gets deleted.</li>
+    <li><b>The wording is allowed to change.</b> "Earn 25k" becomes "stable freedom" as the person grows up — and the original stays saved, like a photo from that year.</li>
+    <li><b>There is exactly one question in the whole app:</b> when did you last connect with this wish?</li>
   </ul>
   <div class="pageno">04</div>
 </section>
@@ -203,28 +203,28 @@ const html = `<!doctype html>
 <!-- 05 · The mechanism -->
 <section>
   <p class="eyebrow">The Mechanism</p>
-  <h2>No plan. Just don't lose the line.</h2>
-  <p class="lead">Instead of a schedule, every wish offers three sizes of connection. The system adapts to today's energy — it never demands that your energy adapt to the system. On a foggy day, two minutes of looking is enough to count as staying on course.</p>
+  <h2>Two minutes counts.</h2>
+  <p class="lead">There's no schedule. Every wish offers three ways to connect, sized to how much you have in you that day — and on a bad day, two minutes of just looking at the drawing is a full visit. The app treats it exactly the same as an hour of real-world work.</p>
   <div class="moons">
     <div class="moon">
       <svg width="64" height="64" viewBox="0 0 64 64"><path d="M 39 8 A 25.5 25.5 0 1 0 39 57 A 20 20 0 1 1 39 8 Z" fill="none" stroke="#6B5C8E" stroke-width="1.9" stroke-linejoin="round"/></svg>
       <b>2 minutes — minimum</b>
-      <p>Open the drawing. Look at it. Allow yourself to still want it. That's all.</p>
+      <p>Open the drawing. Look at it. Let yourself still want it. That's the whole thing.</p>
     </div>
     <div class="moon">
       <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="none" stroke="#6B5C8E" stroke-width="1.9"/><path d="M 32 7 C 28 20 28 44 32 57" fill="none" stroke="#6B5C8E" stroke-width="1.7"/><path d="M 32 12 C 42 16 46 44 32 52" fill="none" stroke="#B5A8D0" stroke-width="1.4" opacity=".6"/></svg>
       <b>15 minutes — normal</b>
-      <p>Write one line to the wish, or take one small real-world step toward it.</p>
+      <p>Write the wish one line, or take one small step toward it.</p>
     </div>
     <div class="moon">
       <svg width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="25" fill="none" stroke="#6B5C8E" stroke-width="1.9"/><circle cx="32" cy="32" r="21.5" fill="none" stroke="#B5A8D0" stroke-width="1.3" stroke-dasharray="3 5" opacity=".7"/></svg>
       <b>60 minutes — deep</b>
-      <p>Move something in the real world. Rare, unforced, and never required.</p>
+      <p>Actually move something in the real world. Rare, and never required.</p>
     </div>
   </div>
   <ul class="points">
-    <li><b>Only "last connected" is ever recorded.</b> No streaks, no completion rate, no missed-day count.</li>
-    <li><b>Returning after silence has exactly one feedback:</b> "You came back." Not "you broke a 41-day streak."</li>
+    <li><b>The app records one thing: when you last connected.</b> There's no streak, no completion rate, nothing that can break.</li>
+    <li><b>Come back after three quiet months and it says "you came back."</b> Not "you broke a 41-day streak."</li>
   </ul>
   <div class="pageno">05</div>
 </section>
@@ -233,11 +233,11 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Design Philosophy</p>
   <h2>In the age of flawless AI images, we stopped the pen at one-tenth.</h2>
-  <p class="lead">AI made polish free. When anyone can render a hyperreal 3D scene in seconds, polish stops meaning anything — a feed of perfect images is just high-stimulation noise, and our audience is already exhausted by it. So Wishflow made the counterintuitive choice: <b>don't render — suggest.</b> One wobbly ink line on warm paper, like a doodle in the corner of your own notebook. Not maximalist AI content. Not a dopamine machine. Deliberate restraint, for three reasons:</p>
+  <p class="lead">Anyone can generate a flawless image now, which means a flawless image says nothing. Our users already scroll past hundreds of perfect renders a day and feel a little worse after each one. So Wishflow goes the other way: every wish is one wobbly ink line on warm paper, like something scribbled in a notebook margin. We had three reasons, and none of them was budget:</p>
   <ul class="points">
-    <li><b>Humanity.</b> A hyperreal render performs — it spends every pixel proving how capable it is. A hand-drawn line proves nothing; it just keeps you company. Your wish is cherished, not inspected.</li>
-    <li><b>Negative space.</b> A finished render locks the wish into one fixed picture and closes your imagination. A single line draws one-tenth and leaves the boat, the house, the future — to you. The image stays still; your relationship with it keeps changing. That's what "a wish is an evolving relationship" requires.</li>
-    <li><b>Participation.</b> A perfect render intimidates: "I could never make that." A humble line invites: "you could draw this too." Users upload their own sketches in the same visual language — and "the app's drawing" and "my drawing" stop being different things.</li>
+    <li><b>It feels human.</b> A hyperreal render is performing for you; it wants a reaction. A wobbly line isn't trying to impress anyone — which is exactly what makes it safe to look at every day, the way a page of your own notebook is safe.</li>
+    <li><b>It leaves room.</b> A finished render decides what your future looks like, down to the light fixtures. A line drawing settles maybe a tenth of it, and the rest stays yours to imagine. Ten years later the same drawing can mean something new — a render can't do that, because it's already full.</li>
+    <li><b>You can join in.</b> Nobody looks at a polished render and thinks "I could make that." A simple line says: you could draw this too. So users can upload their own sketches, and they hang next to the AI's with no visible seam.</li>
   </ul>
   <p class="quote">Restraint isn't absence. Restraint is the design.</p>
   <div class="pageno">06</div>
@@ -246,8 +246,8 @@ const html = `<!doctype html>
 <!-- 07 · The product -->
 <section>
   <p class="eyebrow">The Product</p>
-  <h2>Three rooms, one quiet loop.</h2>
-  <p class="lead">Write a wish in one sentence → the AI illustrator draws its portrait → the wish lives in the gallery for years. Around that loop, three rooms — none of which contains a to-do list:</p>
+  <h2>Three rooms, and no to-do list in any of them.</h2>
+  <p class="lead">The core loop is short: write one sentence, the AI draws the wish a portrait, the wish moves into the gallery and stays for years. Around that loop there are three rooms:</p>
   <div class="trio">
     <div class="room">
       <svg viewBox="0 0 240 130">
@@ -258,8 +258,8 @@ const html = `<!doctype html>
         <circle cx="84" cy="38" r="1.8" fill="#8B7BB0"/>
         <path d="M 118 56 L 172 72" stroke="#6B5C8E" stroke-width="1" opacity=".5"/>
       </svg>
-      <b>Wish Galaxy — look up</b>
-      <p>Every wish still shining, arranged by life stage. The feeling it exists to give: "I haven't failed."</p>
+      <b>Wish Galaxy — the wide view</b>
+      <p>Every wish you've ever made, laid out by life stage. You open it to feel one thing: it's all still here.</p>
     </div>
     <div class="room">
       <svg viewBox="0 0 240 130">
@@ -270,8 +270,8 @@ const html = `<!doctype html>
         </g>
         <path d="M 96 84 Q 106 88 116 84" fill="none" stroke="#8B7BB0" stroke-width="1.1" opacity=".5"/>
       </svg>
-      <b>Life River — today</b>
-      <p>At most three wishes surface per day. The smallest connection counts as moving.</p>
+      <b>Life River — the daily view</b>
+      <p>At most three wishes drift by per day. A two-minute connection counts as moving.</p>
     </div>
     <div class="room">
       <svg viewBox="0 0 240 130">
@@ -282,8 +282,8 @@ const html = `<!doctype html>
         <circle cx="120" cy="98" r="3" fill="none" stroke="#6B5C8E" stroke-width="1.3"/>
         <circle cx="136" cy="98" r="3" fill="#6B5C8E" opacity=".7"/>
       </svg>
-      <b>Wish Card — the relationship</b>
-      <p>A hand-drawn portrait you can open, sit inside, and manifest — not a task with a checkbox.</p>
+      <b>Wish Card — one wish, up close</b>
+      <p>A drawing you can open, sit with, and manifest. There's no checkbox on it anywhere.</p>
     </div>
   </div>
   <div class="pageno">07</div>
@@ -293,11 +293,11 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Craft · The AI Illustrator</p>
   <h2>The drawings kept missing the wish.</h2>
-  <p class="lead">The portrait is the soul of the loop, so the bar is high: a stranger should name the wish from the drawing in one second — and it should feel like art someone made, not a diagram. All of it on a free-tier model budget. At first, we failed on both counts:</p>
+  <p class="lead">The drawing is what a user keeps for years, so it has to pass a hard test: someone who's never seen the wish should guess it from the picture in a second or two, and it should feel drawn, not diagrammed. We had to hit that on a free-tier model budget — and early on, we were missing on every count:</p>
   <div class="cols">
     <div>
       <span class="tag before">Before</span>
-      <p class="lead">"Take a cruise trip with my mom and dad." The model drew the <em>railing</em> — and lost the ship. Figures were rigid stick-men. When quota ran dry, users silently got a generic template that had nothing to do with their words.</p>
+      <p class="lead">"Take a cruise trip with my mom and dad." The model drew the <em>railing</em> and lost the entire ship. The people were stiff stick-men. And when the day's quota ran out, users silently got a generic template that ignored their words completely.</p>
       <ul class="points">
         <li><b>Dead model path:</b> the strongest configured painter had no credit; nobody noticed.</li>
         <li><b>One quota bucket:</b> when the free model hit its daily wall, every user fell to canned domain templates.</li>
@@ -313,7 +313,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Fix 01 · Infrastructure</p>
   <h2>A better painter — and a quota that never dies.</h2>
-  <p class="lead">The drawing call now walks a chain of independent free-tier quota buckets. One bucket running dry no longer sends anyone to a template; it just hands the brush to the next model.</p>
+  <p class="lead">Now the drawing call walks down a chain of free-tier models, each with its own separate quota. When one hits its daily wall, the next one picks up the brush. Nobody lands on a template anymore.</p>
   <div class="chain">
     <div class="nodebox"><b>gemini-3-flash</b><br><span style="font-size:12px;color:var(--text)">primary painter</span></div>
     <svg width="34" height="16" viewBox="0 0 34 16"><path d="M2 8 Q 12 4 24 8 M 20 4 L 25 8 L 20 12" fill="none" stroke="#6B5C8E" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -322,8 +322,8 @@ const html = `<!doctype html>
     <div class="nodebox dim"><b>flash-latest</b><br><span style="font-size:12px;color:var(--text)">last resort</span></div>
   </div>
   <ul class="points">
-    <li><b>Evidence over architecture:</b> we prototyped a scene-planning stage and a blind LLM judge. Both tested <em>worse</em> than a strong painter with a sharp prompt — the weak planner steered the ship out of its own picture. We shipped neither.</li>
-    <li><b>Structural validation + one retry</b> stayed; semantic quality moved into the prompt itself.</li>
+    <li><b>We also tried being clever</b> — a scene-planning stage, then a blind LLM judge to score drawings. Both made results worse: the weak planner kept steering the ship right out of its own picture. We deleted both and kept a sharper prompt on a stronger model.</li>
+    <li><b>What stayed:</b> structural validation and one retry. The semantic quality lives in the prompt now.</li>
   </ul>
   <div class="pageno">09</div>
 </section>
@@ -332,13 +332,13 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Fix 02 · Figures</p>
   <h2>People without faces.</h2>
-  <p class="lead">Wish drawings contain <em>you</em>. Comics theory calls it the masking effect: the simpler the face, the easier it is to step inside it. We tested three figure languages on the same wish:</p>
+  <p class="lead">The person in a wish drawing is supposed to be <em>you</em>. Comics have a name for why simple faces help with that — the masking effect: the less specific the face, the easier it is to put yourself inside it. We drew the same wish three ways to check:</p>
   <div class="cols">
     ${art(beforeCruise, 'Stick figures — rigid, placeholder energy')}
     ${art(gestureG, 'One-line gesture figures, no faces — curved spines, weight, tenderness. ✓ Shipped')}
     ${art(faceF, 'Dot-eye faces — read as smudges at card size. Rejected')}
   </div>
-  <p class="quote">Emotion lives in posture: a tilted head is tenderness, arms wide is joy.</p>
+  <p class="quote">All the emotion turned out to live in posture — a tilted head, arms out wide.</p>
   <div class="pageno">10</div>
 </section>
 
@@ -346,7 +346,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">Fix 03 · Composition</p>
   <h2>Draw the whole ship.</h2>
-  <p class="lead">Minimal line art lives and dies by the silhouette. The prompt now carries an <b>iconic whole-object rule</b>: the hero is always drawn complete, in profile, from the outside — hull, stacked decks, funnel, a row of porthole dots. Never a first-person fragment.</p>
+  <p class="lead">Minimal line art really only has one asset: the silhouette. So the prompt now carries a rule we call <b>iconic whole-object</b>: draw the main thing complete, in profile, from the outside — hull, stacked decks, funnel, a row of porthole dots. Never a first-person fragment of it.</p>
   <div class="cols">
     ${art(beforeCruise, 'Before: "at the railing" → the model drew a railing')}
     ${art(after.cruise?.svg, 'After: "at the railing" still means draw the whole ship — with the family small on deck')}
@@ -359,7 +359,7 @@ const html = `<!doctype html>
 <section>
   <p class="eyebrow">After</p>
   <h2>The same pipeline, today.</h2>
-  <p class="lead"><span class="tag after">After</span> Fresh, unedited generations from the production prompt — whole-object silhouettes, gesture figures, one animated flowing element in every scene.</p>
+  <p class="lead"><span class="tag after">After</span> Straight from the production prompt, no edits. Whole silhouettes, gesture figures, and one slowly moving element in each scene — smoke, water, stars.</p>
   <div class="cols">
     ${art(after.cruise?.svg, 'A cruise with mom & dad')}
     ${art(after.bakery?.svg, 'A little bakery by the sea')}
@@ -374,12 +374,12 @@ const html = `<!doctype html>
   <p class="eyebrow">What Carried Over</p>
   <h2>Four principles we kept.</h2>
   <ul class="points" style="font-size:16.5px; max-width: 62ch">
-    <li><b>Minimal is a discipline, not a shortcut.</b> Weighted line hierarchy, one signature detail row, a caught moment of motion — or it reads as a child's doodle.</li>
-    <li><b>Evidence beats architecture.</b> Two clever pipeline stages died in testing; a sharper prompt on a stronger painter won.</li>
-    <li><b>Design for the quota wall.</b> On free tiers, resilience <em>is</em> product quality — the fallback chain is why users never see a template again.</li>
-    <li><b>Motion is vocabulary, not decoration.</b> Only water, smoke, clouds and starlight move — slowly. The subject holds still, like a memory.</li>
+    <li><b>Minimal is a discipline.</b> It needs a weighted line, one row of detail, one caught moment of motion. Without those it reads as a child's doodle — we know, because ours did.</li>
+    <li><b>Evidence beats architecture.</b> The two cleverest stages of our pipeline died in testing. A better prompt on a better model quietly won.</li>
+    <li><b>Design for the quota wall.</b> On free tiers, the fallback chain isn't plumbing — it's the reason no user ever sees a template.</li>
+    <li><b>Motion is vocabulary.</b> Only water, smoke, clouds and starlight move, and slowly. The subject holds still.</li>
   </ul>
-  <p class="manifesto">Wishflow doesn't help you get there faster. It makes sure that, in any state of life, you never leave your own direction.</p>
+  <p class="manifesto">Wishflow doesn't help you get anywhere faster. It just makes sure you never lose sight of where you wanted to go.</p>
   <div class="footline">Wishflow · 2026 — drawings in this deck are live SVG, animated as shipped</div>
   <div class="pageno">13</div>
 </section>
