@@ -329,7 +329,7 @@ export default function TryPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 16 }}>
               {/* Time Scope */}
               <div>
-                <label className="muted" style={{ display: 'block', marginBottom: 8, fontWeight: 500, fontSize: 14 }}>
+                <label className="muted" style={{ display: 'block', marginBottom: 8, fontWeight: 500, fontSize: 15 }}>
                   {language === 'zh' ? '这是什么类型的愿望？' : 'What type of wish is this?'}
                 </label>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -337,7 +337,7 @@ export default function TryPage() {
                     type="button"
                     onClick={() => setTimeScope('short')}
                     className={timeScope === 'short' ? 'btn primary' : 'btn'}
-                    style={{ flex: 1, padding: '10px 12px', fontSize: 13 }}
+                    style={{ flex: 1, padding: '10px 12px', fontSize: 14 }}
                   >
                     {language === 'zh' ? '短期愿望' : 'Short-term'}
                   </button>
@@ -345,7 +345,7 @@ export default function TryPage() {
                     type="button"
                     onClick={() => setTimeScope('long')}
                     className={timeScope === 'long' ? 'btn primary' : 'btn'}
-                    style={{ flex: 1, padding: '10px 12px', fontSize: 13 }}
+                    style={{ flex: 1, padding: '10px 12px', fontSize: 14 }}
                   >
                     {language === 'zh' ? '长期愿望' : 'Long-term'}
                   </button>
@@ -354,7 +354,7 @@ export default function TryPage() {
 
               {/* Target Time */}
               <div>
-                <label className="muted" style={{ display: 'block', marginBottom: 8, fontWeight: 500, fontSize: 14 }}>
+                <label className="muted" style={{ display: 'block', marginBottom: 8, fontWeight: 500, fontSize: 15 }}>
                   {language === 'zh' ? '你希望什么时候实现？' : 'When do you want to achieve it?'}
                 </label>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -362,7 +362,7 @@ export default function TryPage() {
                     type="button"
                     onClick={() => setTargetTime('weeks')}
                     className={targetTime === 'weeks' ? 'btn primary' : 'btn'}
-                    style={{ flex: 1, padding: '10px 8px', fontSize: 12 }}
+                    style={{ flex: 1, padding: '10px 8px', fontSize: 14 }}
                   >
                     {language === 'zh' ? '几周内' : 'Weeks'}
                   </button>
@@ -370,7 +370,7 @@ export default function TryPage() {
                     type="button"
                     onClick={() => setTargetTime('months')}
                     className={targetTime === 'months' ? 'btn primary' : 'btn'}
-                    style={{ flex: 1, padding: '10px 8px', fontSize: 12 }}
+                    style={{ flex: 1, padding: '10px 8px', fontSize: 14 }}
                   >
                     {language === 'zh' ? '几个月' : 'Months'}
                   </button>
@@ -378,7 +378,7 @@ export default function TryPage() {
                     type="button"
                     onClick={() => setTargetTime('years')}
                     className={targetTime === 'years' ? 'btn primary' : 'btn'}
-                    style={{ flex: 1, padding: '10px 8px', fontSize: 12 }}
+                    style={{ flex: 1, padding: '10px 8px', fontSize: 14 }}
                   >
                     {language === 'zh' ? '几年内' : 'Years'}
                   </button>

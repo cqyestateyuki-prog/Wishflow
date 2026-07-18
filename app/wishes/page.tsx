@@ -185,10 +185,10 @@ export default function WishesPage() {
           />
           <Link
             href={quickWish.trim().length >= 5 ? `/try?prefill=${encodeURIComponent(quickWish.trim())}` : '/try'}
-            className="btn primary"
+            className="btn solid"
             style={{ alignSelf: 'center', whiteSpace: 'nowrap', padding: '12px 22px' }}
           >
-            {language === 'zh' ? '生成愿望图 →' : 'Generate wish image →'}
+            {language === 'zh' ? '生成愿望图' : 'Generate wish image'}
           </Link>
         </div>
       </div>
@@ -225,7 +225,7 @@ export default function WishesPage() {
             borderRadius: 12,
             border: '1px solid var(--border)',
             background: 'rgba(255,255,255,0.6)',
-            fontSize: 12,
+            fontSize: 13,
             cursor: 'pointer',
             appearance: 'none',
             backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'10\' height=\'6\' viewBox=\'0 0 10 6\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M1 1L5 5L9 1\' stroke=\'%236B5C8E\' stroke-width=\'1.5\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',
@@ -249,7 +249,7 @@ export default function WishesPage() {
             borderRadius: 12,
             border: '1px solid var(--border)',
             background: 'rgba(255,255,255,0.6)',
-            fontSize: 12,
+            fontSize: 13,
             cursor: 'pointer',
             appearance: 'none',
             backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'10\' height=\'6\' viewBox=\'0 0 10 6\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M1 1L5 5L9 1\' stroke=\'%236B5C8E\' stroke-width=\'1.5\' stroke-linecap=\'round\'/%3E%3C/svg%3E")',
@@ -284,7 +284,7 @@ export default function WishesPage() {
                   border: `1px solid ${active ? 'rgba(107,92,142,0.7)' : 'var(--border)'}`,
                   background: active ? 'rgba(155,143,196,0.15)' : 'rgba(255,255,255,0.6)',
                   color: active ? 'var(--wish)' : 'var(--ink)',
-                  fontSize: 12,
+                  fontSize: 13,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                   transition: 'all 160ms ease',

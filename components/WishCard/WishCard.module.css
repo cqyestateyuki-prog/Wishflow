@@ -118,7 +118,7 @@
 }
 
 .badge {
-  font-size: 11px;
+  font-size: 12px;
   padding: 4px 10px;
   border-radius: 999px;
   background: rgba(230, 225, 240, 0.35);
@@ -208,13 +208,13 @@
 }
 
 .connectionLabel {
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--text);
   font-weight: 500;
 }
 
 .connectionDuration {
-  font-size: 10px;
+  font-size: 11px;
   color: rgba(74, 85, 104, 0.7);
 }
 
@@ -361,7 +361,7 @@
 
 .historyNote {
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   margin-top: 4px;
 }
 

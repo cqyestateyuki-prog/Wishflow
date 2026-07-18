@@ -198,7 +198,7 @@ export default function DailyPage() {
               >
                 <div style={{ marginBottom: 12 }}>
                   <b style={{ fontSize: 14 }}>{wish.title}</b>
-                  <div style={{ fontSize: 11, color: 'var(--text)', opacity: 0.7, marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: 'var(--text)', opacity: 0.7, marginTop: 4 }}>
                     {getDomainLabel(wish.domain, language)}
                   </div>
                 </div>

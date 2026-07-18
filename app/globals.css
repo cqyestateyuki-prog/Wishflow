@@ -19,6 +19,9 @@
   --wish-deep: #7c6aaa;
   --glow: rgba(145, 127, 185, 0.5);
   --radius: 18px;
+  /* Radios / checkboxes (e.g. the Min/Normal/Deep group) tint brand purple
+     instead of the browser's default blue. */
+  accent-color: var(--wish);
 }
 
 * {
@@ -42,6 +45,20 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Focus rings — one purple treatment, never the browser's default blue.
+   --glow is the brand's selection / halo purple (#917fb9 @ .5). :focus-visible
+   keeps the ring for keyboard users without flashing it on every mouse click.
+   Focus indication is only recolored, never removed (DESIGN_SYSTEM.md §9.7). */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--glow);
+  outline-offset: 2px;
 }
 
 main {
