@@ -1,6 +1,10 @@
 export type Language = 'en' | 'zh';
 
 export const translations = {
+  nav_create: {
+    en: 'Create',
+    zh: '创建'
+  },
   nav_overview: {
     en: 'Universe',
     zh: '愿力宇宙'
@@ -10,8 +14,8 @@ export const translations = {
     zh: '今日连接'
   },
   nav_wishes: {
-    en: 'Collection',
-    zh: '愿望收藏'
+    en: 'Wish Gallery',
+    zh: '愿望画廊'
   },
   nav_log: {
     en: 'Logs',

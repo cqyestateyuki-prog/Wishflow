@@ -12,15 +12,21 @@ import LoginPrompt from '@/components/LoginPrompt';
 import WishCard from '@/components/WishCard';
 import WishNote from '@/components/WishCard/WishNote';
 import WishDetail from '@/components/WishCard/WishDetail';
+import { StarMap, RiverMap } from '@/components/WishMap';
+import { StarIcon, WaveIcon } from '@/components/Icons';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLanguage } from '@/components/LanguageProvider';
 import { LocalWish, clearSampleData } from '@/lib/localStore';
-import { DOMAINS, STAGES, WILL_SOURCES, CONNECTION_LEVELS } from '@/lib/constants';
+import { DOMAINS, CONNECTION_LEVELS } from '@/lib/constants';
 import { supabase } from '@/lib/supabase/client';
 import { WOBBLY_FRAME } from '@/components/wobblyFrame';
 import cardStyles from '@/components/WishCard/WishCard.module.css';
+import mapStyles from '@/components/WishMap/WishMap.module.css';
 
 type SortOption = 'recent' | 'created' | 'pinned';
+// Board = the pinned-paper gallery; Galaxy/River = the former Wish Map views,
+// now folded in here so the whole collection lives on one page.
+type ViewMode = 'board' | 'galaxy' | 'river';
 
 // Constellation positions (% of the gallery space) for small counts —
 // wishes arrange like stars: alone at the center, a pair facing each other,
@@ -44,33 +50,26 @@ const CONST_HEIGHTS: Record<number, number> = {
 export default function WishesPage() {
   const { language } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const { 
-    wishes, 
-    loading, 
-    addWish, 
-    togglePin, 
-    recordConnection, 
+  const {
+    wishes,
+    loading,
+    togglePin,
+    recordConnection,
     deleteWish,
-    filterWishes, 
+    filterWishes,
     getSorted,
     reload
   } = useLocalWishes();
-  
+
   const [detailWish, setDetailWish] = useState<LocalWish | null>(null);
   // Quick-create box at the top — hands the text to /try for generation
   const [quickWish, setQuickWish] = useState('');
-  const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('pinned');
   const [domainFilter, setDomainFilter] = useState('');
-  
-  // Create form state
-  const [newTitle, setNewTitle] = useState('');
-  const [newEndScene, setNewEndScene] = useState('');
-  const [newDomain, setNewDomain] = useState('');
-  const [newStage, setNewStage] = useState('25-35');
-  const [newWillSource, setNewWillSource] = useState('');
-  const [creating, setCreating] = useState(false);
+  // Board / Galaxy / River — the collection can be read as a pinned board or
+  // as one of the two Wish Map canvases.
+  const [viewMode, setViewMode] = useState<ViewMode>('board');
 
   // Check auth state and clear sample data on login
   useEffect(() => {
@@ -99,43 +98,6 @@ export default function WishesPage() {
   const sortedWishes = getSorted(sortBy).filter(w => 
     filteredWishes.some(fw => fw.id === w.id)
   );
-
-  // Handle wish creation
-  const handleCreate = useCallback(async () => {
-    if (!newTitle.trim()) return;
-    setCreating(true);
-    try {
-      const title = newTitle.trim();
-      const endScene = newEndScene.trim();
-      addWish({
-        title,
-        description: endScene || title,
-        end_scene: endScene || null,
-        domain: newDomain || null,
-        stage: newStage || null,
-        will_source: newWillSource || null,
-        time_scope: 'long',
-        target_time: 'years',
-        svg_pattern: newDomain || null,
-        svg_data: null,
-        keywords: [],
-        mood: null,
-        line_seed: null,
-        pinned: false,
-        last_connected_at: null,
-        last_level: null,
-      });
-      // Reset form
-      setNewTitle('');
-      setNewEndScene('');
-      setNewDomain('');
-      setNewStage('25-35');
-      setNewWillSource('');
-      setShowCreateForm(false);
-    } finally {
-      setCreating(false);
-    }
-  }, [addWish, newTitle, newEndScene, newDomain, newStage, newWillSource]);
 
   // Handle connection
   const handleConnect = useCallback((wishId: string, level: string, note?: string) => {
@@ -190,21 +152,12 @@ export default function WishesPage() {
             {language === 'zh' ? '愿力卡库' : 'Wish Gallery'}
           </h1>
           <p className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-            {language === 'zh' 
-              ? `${totalCount} 个愿望 · ${pinnedCount} 个置顶` 
+            {language === 'zh'
+              ? `${totalCount} 个愿望 · ${pinnedCount} 个置顶`
               : `${totalCount} wishes · ${pinnedCount} pinned`
             }
           </p>
         </div>
-        <button 
-          className="btn primary"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          {showCreateForm 
-            ? (language === 'zh' ? '取消' : 'Cancel')
-            : (language === 'zh' ? '+ 新建愿望' : '+ New Wish')
-          }
-        </button>
       </div>
 
       {/* Quick create — the same hand-drawn sheet as /try, right at the top:
@@ -239,125 +192,6 @@ export default function WishesPage() {
           </Link>
         </div>
       </div>
-
-      {/* Create Form */}
-      {showCreateForm && (
-        <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>
-            {language === 'zh' ? '创建新愿望' : 'Create New Wish'}
-          </h3>
-          
-          <div style={{ display: 'grid', gap: 12 }}>
-            <input
-              type="text"
-              placeholder={language === 'zh' ? '愿望标题（必填）' : 'Wish title (required)'}
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              style={{
-                padding: '12px 14px',
-                borderRadius: 14,
-                border: '1px solid var(--border)',
-                background: 'rgba(255,255,255,0.6)',
-                fontSize: 14,
-              }}
-            />
-            
-            <textarea
-              placeholder={language === 'zh' 
-                ? '终局画面 - 描述实现时的感觉/场景' 
-                : 'End scene - describe how it feels when achieved'
-              }
-              value={newEndScene}
-              onChange={(e) => setNewEndScene(e.target.value)}
-              rows={2}
-              style={{
-                padding: '12px 14px',
-                borderRadius: 14,
-                border: '1px solid var(--border)',
-                background: 'rgba(255,255,255,0.6)',
-                fontSize: 14,
-                resize: 'none',
-              }}
-            />
-            
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <select
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(255,255,255,0.6)',
-                  fontSize: 13,
-                  flex: 1,
-                  minWidth: 120,
-                }}
-              >
-                <option value="">{language === 'zh' ? '选择领域' : 'Select domain'}</option>
-                {DOMAINS.map(d => (
-                  <option key={d.id} value={d.label}>
-                    {language === 'zh' ? d.label : d.labelEn}
-                  </option>
-                ))}
-              </select>
-              
-              <select
-                value={newStage}
-                onChange={(e) => setNewStage(e.target.value)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(255,255,255,0.6)',
-                  fontSize: 13,
-                  flex: 1,
-                  minWidth: 120,
-                }}
-              >
-                {STAGES.map(s => (
-                  <option key={s.id} value={s.id}>
-                    {language === 'zh' ? s.label : s.labelEn}
-                  </option>
-                ))}
-              </select>
-              
-              <select
-                value={newWillSource}
-                onChange={(e) => setNewWillSource(e.target.value)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(255,255,255,0.6)',
-                  fontSize: 13,
-                  flex: 1,
-                  minWidth: 120,
-                }}
-              >
-                <option value="">{language === 'zh' ? '愿力源' : 'Will source'}</option>
-                {WILL_SOURCES.map(w => (
-                  <option key={w.id} value={w.label}>
-                    {language === 'zh' ? w.label : w.labelEn}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <button
-              className="btn primary"
-              onClick={handleCreate}
-              disabled={!newTitle.trim() || creating}
-              style={{ marginTop: 8 }}
-            >
-              {creating 
-                ? (language === 'zh' ? '创建中...' : 'Creating...') 
-                : (language === 'zh' ? '创建愿望' : 'Create Wish')
-              }
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Filters and Search */}
       <div style={{ 
@@ -427,12 +261,67 @@ export default function WishesPage() {
           <option value="recent">{language === 'zh' ? '最近连接' : 'Recent'}</option>
           <option value="created">{language === 'zh' ? '创建时间' : 'Created'}</option>
         </select>
+
+        {/* View toggle — read the same wishes as a pinned board, a galaxy,
+            or a river. Styled to match the selects in this row. */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {([
+            { mode: 'board', label: language === 'zh' ? '画板' : 'Board', icon: null },
+            { mode: 'galaxy', label: language === 'zh' ? '星系' : 'Galaxy', icon: <StarIcon size={13} /> },
+            { mode: 'river', label: language === 'zh' ? '河流' : 'River', icon: <WaveIcon size={13} /> },
+          ] as const).map(({ mode, label, icon }) => {
+            const active = viewMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '10px 14px',
+                  borderRadius: 12,
+                  border: `1px solid ${active ? 'rgba(107,92,142,0.7)' : 'var(--border)'}`,
+                  background: active ? 'rgba(155,143,196,0.15)' : 'rgba(255,255,255,0.6)',
+                  color: active ? 'var(--wish)' : 'var(--ink)',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'all 160ms ease',
+                }}
+              >
+                {icon}
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Wish Gallery */}
+      {/* Wish Gallery — board / galaxy / river all read the same sortedWishes */}
       {loading ? (
         <div className="card" style={{ padding: 48, textAlign: 'center' }}>
           <p className="muted">{language === 'zh' ? '加载中...' : 'Loading...'}</p>
+        </div>
+      ) : viewMode === 'galaxy' ? (
+        // Galaxy — the former Wish Map star canvas, full-bleed
+        <div className={mapStyles.mapFullBleed}>
+          <StarMap
+            wishes={sortedWishes}
+            selectedWishId={null}
+            onWishSelect={() => {}}
+            onWishClick={(w) => setDetailWish(w)}
+          />
+        </div>
+      ) : viewMode === 'river' ? (
+        // River — the former Wish Map river canvas, full-bleed
+        <div className={mapStyles.mapFullBleed}>
+          <RiverMap
+            wishes={sortedWishes}
+            selectedWishId={null}
+            onWishSelect={() => {}}
+            onWishClick={(w) => setDetailWish(w)}
+          />
         </div>
       ) : sortedWishes.length === 0 ? (
         <div className={cardStyles.emptyState}>

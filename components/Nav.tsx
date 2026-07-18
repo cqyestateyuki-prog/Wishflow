@@ -74,7 +74,22 @@ export default function Nav() {
           </div>
         </Link>
         <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-          <Link 
+          {/* Create → the generator. First item: making a wish starts here. */}
+          <Link
+            href="/try"
+            style={{
+              color: pathname === '/try' ? 'var(--wish)' : 'var(--ink)',
+              fontWeight: pathname === '/try' ? 600 : 400,
+              textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: 10,
+              background: pathname === '/try' ? 'rgba(155, 143, 196, 0.12)' : 'transparent',
+              transition: 'all 160ms ease',
+            }}
+          >
+            {t('nav_create', lang)}
+          </Link>
+          <Link
             href="/daily"
             style={{
               color: pathname === '/daily' ? 'var(--wish)' : 'var(--ink)',
@@ -88,21 +103,8 @@ export default function Nav() {
           >
             {t('nav_daily', lang)}
           </Link>
-          <Link 
-            href="/overview"
-            style={{
-              color: pathname === '/overview' ? 'var(--wish)' : 'var(--ink)',
-              fontWeight: pathname === '/overview' ? 600 : 400,
-              textDecoration: 'none',
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: pathname === '/overview' ? 'rgba(155, 143, 196, 0.12)' : 'transparent',
-              transition: 'all 160ms ease',
-            }}
-          >
-            {t('nav_overview', lang)}
-          </Link>
-          <Link 
+          {/* Wish Gallery → the collection, now home to the galaxy/river views too. */}
+          <Link
             href="/wishes"
             style={{
               color: pathname === '/wishes' ? 'var(--wish)' : 'var(--ink)',
