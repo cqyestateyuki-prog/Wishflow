@@ -12,18 +12,19 @@
   min-height: 500px;
 }
 
+/* No frame: the map IS the page (same unbounded treatment as Wish Gallery) */
 .mapWrap {
-  padding: 14px;
+  padding: 14px 0;
   height: 100%;
   position: relative;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
+}
+
+/* Full-bleed wrapper: the galaxy/river escapes the page container */
+.mapFullBleed {
+  width: min(100vw - clamp(24px, 5vw, 72px), 1760px);
+  margin-left: calc(50% - min(100vw - clamp(24px, 5vw, 72px), 1760px) / 2);
 }
 
 .mapTop {
@@ -32,6 +33,54 @@
   align-items: center;
   gap: 10px;
   padding: 8px 10px 6px;
+  /* The canvas is full-bleed but the header stays in the reading column —
+     title and legend shouldn't be flung to opposite screen edges */
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* The arm's companion shadow-line — same double-stroke voice as the river */
+.galaxyArmSoft {
+  fill: none;
+  stroke: rgba(155, 143, 196, 0.22);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 7 14;
+}
+
+/* Galaxy spiral arms — dashed ink, star-stream slowly flowing outward */
+.galaxyArm {
+  fill: none;
+  stroke: rgba(91, 75, 132, 0.42);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 10 12;
+  animation: wmArmFlow 44s linear infinite;
+}
+
+@keyframes wmArmFlow {
+  to { stroke-dashoffset: -88; }
+}
+
+.noAnimation .galaxyArm {
+  animation: none;
+}
+
+/* A boat riding its own slow swell */
+.boatBob {
+  animation: wmBoatBob 5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes wmBoatBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-5px) rotate(2.4deg); }
+}
+
+.noAnimation .boatBob {
+  animation: none;
 }
 
 .mapTop b {
@@ -55,23 +104,23 @@
 }
 
 .legendDot {
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 999px;
-  background: var(--wish-mid, #a794d0);
-  box-shadow: 0 0 6px var(--glow, rgba(150, 133, 190, 0.45));
 }
 
 .legendDotLow {
-  background: var(--wish-low, #cdc2e4);
+  background: #faf9f7;
+  border: 2px solid #7e6ca8;
 }
 
 .legendDotMid {
-  background: var(--wish-mid, #a794d0);
+  background: #5b4b84;
 }
 
 .legendDotDeep {
-  background: var(--wish-deep, #7c6aaa);
+  background: #4a3d70;
+  box-shadow: 0 0 0 2px rgba(74, 61, 112, 0.25);
 }
 
 /* SVG Canvas */
@@ -82,14 +131,14 @@
   border-radius: 14px;
 }
 
-/* ===== Starfield dust / light on water (DESIGN_SYSTEM §5) ===== */
+/* ===== Starfield dust — sparse ink specks, quiet but crisp ===== */
 .dust {
-  fill: #a794d0;
+  fill: #5b4b84;
   pointer-events: none;
 }
 
 .dustTwinkle {
-  fill: #a794d0;
+  fill: #5b4b84;
   pointer-events: none;
   opacity: var(--dust-base, 0.4);
   animation-name: twinkle;
@@ -102,11 +151,11 @@
   50% { opacity: calc(var(--dust-base, 0.4) + 0.25); }
 }
 
-/* ===== Star Map — hand-drawn orbits ===== */
+/* ===== Star Map — hand-drawn orbits: thinner but darker = crisper ===== */
 .ring {
   fill: none;
-  stroke: rgba(145, 127, 185, 0.42);
-  stroke-width: 2.2;
+  stroke: rgba(91, 75, 132, 0.55);
+  stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 12 9;
@@ -114,13 +163,13 @@
 }
 
 .ringSoft {
-  stroke: rgba(145, 127, 185, 0.3);
-  stroke-width: 2;
+  stroke: rgba(91, 75, 132, 0.4);
+  stroke-width: 1.5;
 }
 
 .ringFaded {
-  stroke: rgba(145, 127, 185, 0.2);
-  stroke-width: 1.8;
+  stroke: rgba(91, 75, 132, 0.28);
+  stroke-width: 1.4;
 }
 
 @keyframes drift {
@@ -128,14 +177,22 @@
   to { stroke-dashoffset: -260; }
 }
 
+/* Compass ticks on the orbits — short inward marks, coordinates as decoration */
+.ringTicks {
+  stroke: #5b4b84;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
 .ringLabel {
-  fill: rgba(145, 127, 185, 0.55);
-  font-size: 12.5px;
+  fill: rgba(91, 75, 132, 0.85);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   paint-order: stroke;
-  stroke: rgba(250, 249, 247, 0.9);
-  stroke-width: 3px;
+  stroke: rgba(250, 249, 247, 0.95);
+  stroke-width: 4px;
   stroke-linejoin: round;
   pointer-events: none;
 }
@@ -147,13 +204,12 @@
   font-weight: 600;
 }
 
-/* ===== Core — a quietly breathing source ===== */
-.core {
-  stroke: rgba(190, 175, 222, 0.45);
-  stroke-width: 1.5;
-}
-
-.coreHalo {
+/* ===== Core — an ink compass sun with breathing tick marks ===== */
+.coreTicks {
+  stroke: #5b4b84;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.6;
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
@@ -171,7 +227,7 @@
   font-weight: 700;
 }
 
-/* ===== Wish star-bodies / islands (fill comes from SVG gradients) ===== */
+/* ===== Wish stars — ink glyphs (StarMap) / islands (RiverMap) ===== */
 .node,
 .island {
   stroke: rgba(255, 255, 255, 0.95);
@@ -187,10 +243,50 @@
   transform: scale(1.12);
 }
 
-/* Level markers — fill is painted by gradient attributes, not CSS */
+.nodeGlyph {
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 140ms ease;
+}
+
+.starNode:hover .nodeGlyph {
+  transform: scale(1.18);
+}
+
+/* Focus by subtraction: hovering any star dims the others — light-ground
+   maps read "brighter" through contrast, never through glow. */
+.starNode {
+  transition: opacity 180ms ease;
+}
+
+.starsGroup:hover .starNode {
+  opacity: 0.4;
+}
+
+.starsGroup .starNode:hover {
+  opacity: 1;
+}
+
+.nodeHit {
+  cursor: pointer;
+}
+
+/* Level markers kept for RiverMap islands (no visual effect of their own) */
 .nodeLow { --level: low; }
 .nodeMid { --level: mid; }
 .nodeDeep { --level: deep; }
+
+/* Selection: a slow rotating dashed ring, drawn not glowing */
+.nodeSelRing {
+  fill: none;
+  stroke: rgba(91, 75, 132, 0.65);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+  pointer-events: none;
+  animation: driftLink 9s linear infinite;
+}
 
 .nodeActive {
   stroke: rgba(255, 255, 255, 1);
@@ -232,30 +328,21 @@
 }
 
 .nodeLabel {
-  fill: rgba(46, 43, 51, 0.85);
+  fill: rgba(46, 43, 51, 0.95);
   font-size: 15px;
   font-weight: 600;
   pointer-events: none;
   paint-order: stroke;
-  stroke: rgba(250, 249, 247, 0.9);
-  stroke-width: 3.5px;
+  stroke: rgba(250, 249, 247, 0.95);
+  stroke-width: 4px;
   stroke-linejoin: round;
 }
 
-/* ===== Connection link (core → selected wish) ===== */
-.linkGlow {
-  fill: none;
-  stroke: rgba(150, 133, 190, 0.5);
-  stroke-width: 7;
-  stroke-linecap: round;
-  opacity: 0.8;
-  pointer-events: none;
-}
-
+/* ===== Connection link (core → selected wish) — dashed ink, no blur ===== */
 .link {
   fill: none;
-  stroke: rgba(145, 127, 185, 0.65);
-  stroke-width: 2.2;
+  stroke: rgba(91, 75, 132, 0.75);
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 7 9;
@@ -268,61 +355,85 @@
   to { stroke-dashoffset: -240; }
 }
 
-/* ===== River Map — a real flowing body of water ===== */
-.riverHaze {
-  fill: none;
-  stroke: rgba(150, 133, 190, 0.12);
-  stroke-width: 78;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: blur(14px);
-  pointer-events: none;
+/* Draw-on reveal: the mask stroke sweeps from core to star in ~500ms */
+.linkReveal {
+  stroke-dashoffset: 1;
+  animation: linkDraw 500ms ease-out forwards;
 }
 
-.riverBody {
-  fill: none;
-  stroke: url(#rm-water);
-  stroke-width: 46;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 14px 32px rgba(145, 127, 185, 0.1));
-  pointer-events: none;
+@keyframes linkDraw {
+  to { stroke-dashoffset: 0; }
 }
 
-.riverEdge {
+/* With animation disabled the reveal must not hide the link forever */
+.noAnimation .linkReveal {
+  stroke-dashoffset: 0;
+}
+
+/* ===== River Map — metro-map grammar: one stable ink line ===== */
+/* Waterway banks and inner streams — broken lines flowing at the same
+   visible pace as the landing page river */
+.riverBank {
   fill: none;
-  stroke: rgba(145, 127, 185, 0.45);
+  stroke: rgba(91, 75, 132, 0.6);
   stroke-width: 2.2;
   stroke-linecap: round;
+  stroke-dasharray: 16 12;
+  pointer-events: none;
+  animation: wmArmFlow 13s linear infinite;
+}
+
+.riverStream {
+  fill: none;
+  stroke: rgba(155, 143, 196, 0.38);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 11 14;
+  pointer-events: none;
+  animation: wmArmFlow 9s linear infinite;
+}
+
+.noAnimation .riverBank,
+.noAnimation .riverStream {
+  animation: none;
+}
+
+.riverMain {
+  fill: none;
+  stroke: #5b4b84;
+  stroke-width: 2.6;
+  stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 14 10;
-  animation: driftRiver 18s linear infinite;
   pointer-events: none;
 }
 
-.riverEdgeFaded {
-  opacity: 0.55;
-}
-
-/* Inner currents — thin light streaks moving at different speeds */
-.flowLine {
+/* A quiet parallel companion line gives the water body without a gradient */
+.riverCompanion {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.55);
+  stroke: rgba(91, 75, 132, 0.22);
   stroke-width: 1.6;
   stroke-linecap: round;
-  stroke-dasharray: 3 16;
-  animation: driftRiver linear infinite;
+  stroke-linejoin: round;
   pointer-events: none;
 }
 
-.flowSlow {
-  animation-duration: 26s;
-  opacity: 0.7;
+/* Moving light inside the main line — paper-colored dashes drifting slowly */
+.riverLight {
+  fill: none;
+  stroke: rgba(250, 249, 247, 0.9);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-dasharray: 3 20;
+  animation: driftRiver 22s linear infinite;
+  pointer-events: none;
 }
 
-.flowFast {
-  animation-duration: 15s;
-  opacity: 0.9;
+/* 45° leader line from a stop to its label */
+.leader {
+  fill: none;
+  stroke: rgba(46, 43, 51, 0.3);
+  stroke-width: 1;
+  pointer-events: none;
 }
 
 @keyframes driftRiver {
@@ -528,13 +639,65 @@
   line-height: 1.8;
 }
 
-/* Layout */
-.layout {
+/* Layout — the map IS the page (full width); wishes live on a gallery shelf
+   below it, as the same pinned paper cards used on the landing page and the
+   Wish Gallery. 2026-07-10 布局改版(画廊架模式) */
+
+/* Slim toolbar above the shelf: search + filters in one row */
+.shelfBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 18px 2px 4px;
+}
+
+.shelfBar .search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 340px;
+  padding: 8px 12px;
+}
+
+/* Horizontal gallery shelf of wish cards */
+.shelf {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 16px;
-  align-items: stretch;
-  min-height: calc(100vh - 180px);
+  grid-auto-flow: column;
+  grid-auto-columns: 250px;
+  gap: 18px;
+  overflow-x: auto;
+  padding: 22px 6px 24px; /* headroom for the clip, tilt and shadow */
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+
+.shelfCard {
+  scroll-snap-align: start;
+  border-radius: 20px;
+  transition: box-shadow 160ms ease;
+}
+
+/* Selected wish: a quiet ink ring around the sheet */
+.shelfCardActive {
+  box-shadow: 0 0 0 2px rgba(91, 75, 132, 0.45);
+}
+
+/* Mobile: the shelf becomes a mood board — two staggered columns of pinned
+   notes (平面杂志/便签墙), scrolled vertically with the page. */
+@media (max-width: 980px) {
+  .shelf {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-columns: unset;
+    gap: 18px 12px;
+    overflow-x: visible;
+    padding: 20px 4px 28px;
+    scroll-snap-type: none;
+  }
+
+  .shelfCard:nth-child(even) {
+    transform: translateY(14px);
+  }
 }
 
 /* View toggle */

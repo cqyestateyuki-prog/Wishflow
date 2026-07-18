@@ -10,7 +10,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import LoginPrompt from '@/components/LoginPrompt';
 import { StarMap, RiverMap } from '@/components/WishMap';
-import WishCard from '@/components/WishCard';
+import WishNote from '@/components/WishCard/WishNote';
 import WishDetail from '@/components/WishCard/WishDetail';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -190,117 +190,71 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        {/* Demo map layout */}
-        <div className={styles.layout}>
-          {/* Left sidebar - Demo wish list */}
-          <aside className={styles.sidebar}>
-            <div>
-              <h2>{language === 'zh' ? '你的愿望' : 'Your Wishes'}</h2>
-              <p className={styles.sidebarDesc}>
-                {language === 'zh' 
-                  ? '梦想没有截止日期。只要它一直在你身边。' 
-                  : "There's no deadline for a dream. Just keep it close."
-                }
-              </p>
-            </div>
-
-            {/* Demo wish list - clickable to show login prompt */}
-            <div className={styles.wishList}>
-              {demoWishes.map((wish) => {
-                const levelInfo = CONNECTION_LEVELS.find((l: { id: string; label: string; labelEn: string }) => l.id === wish.last_level);
-                return (
-                  <div
-                    key={wish.id}
-                    className={styles.wishItem}
-                    style={{ opacity: 0.7, cursor: 'pointer' }}
-                    onClick={() => setShowLoginPrompt(true)}
-                  >
-                    <b>{wish.title}</b>
-                    <div className={styles.wishItemMeta}>
-                      <span style={{ fontSize: 11, opacity: 0.7 }}>
-                        {getDomainLabel(wish.domain, language)} · {getStageLabel(wish.stage, language)}
-                      </span>
-                      {levelInfo && (
-                        <span className={styles.levelBadge} style={{ flexShrink: 0 }}>
-                          <ConnectionIcon levelId={levelInfo.id} size={10} />
-                          {language === 'zh' ? levelInfo.label : levelInfo.labelEn}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ 
-              marginTop: 24, 
-              padding: 16, 
-              background: 'rgba(248, 246, 252, 0.6)',
-              borderRadius: 14,
-              fontSize: 12,
-              color: 'var(--text)',
-              opacity: 0.8,
-            }}>
-              {language === 'zh' ? '愿望会陪你一辈子。' : 'Wishes stay with you forever.'}
-            </div>
-          </aside>
-
-          {/* Right side - Demo Map */}
-          <section>
-            {/* Demo map - clickable to show login prompt */}
-            <div 
-              style={{ opacity: 0.85, cursor: 'pointer', position: 'relative' }}
-              onClick={() => setShowLoginPrompt(true)}
+        {/* Demo map + shelf (map full width, wishes as gallery cards below) */}
+        <div>
+          {/* Demo map - clickable to show login prompt */}
+          <div
+            className={styles.mapFullBleed}
+            style={{ opacity: 0.9, cursor: 'pointer', position: 'relative' }}
+            onClick={() => setShowLoginPrompt(true)}
+          >
+            {/* View toggle inside map */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 56,
+                right: 'max(16px, calc((100% - 1120px) / 2))',
+                zIndex: 10,
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* View toggle inside map */}
-              <div 
-                style={{ 
-                  position: 'absolute',
-                  top: 56,
-                  right: 16,
-                  zIndex: 10,
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className={styles.viewToggle}>
-                  <button 
-                    className={viewMode === 'star' ? 'active' : ''} 
-                    onClick={() => setViewMode('star')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <StarIcon size={14} />
-                    {language === 'zh' ? '星图' : 'Star'}
-                  </button>
-                  <button 
-                    className={viewMode === 'river' ? 'active' : ''} 
-                    onClick={() => setViewMode('river')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <WaveIcon size={14} />
-                    {language === 'zh' ? '河流' : 'River'}
-                  </button>
-                </div>
-              </div>
-              
-              <div style={{ pointerEvents: 'none' }}>
-                {viewMode === 'star' ? (
-                  <StarMap
-                    wishes={demoWishes}
-                    selectedWishId={null}
-                    onWishSelect={() => {}}
-                    onWishClick={() => {}}
-                  />
-                ) : (
-                  <RiverMap
-                    wishes={demoWishes}
-                    selectedWishId={null}
-                    onWishSelect={() => {}}
-                    onWishClick={() => {}}
-                  />
-                )}
+              <div className={styles.viewToggle}>
+                <button
+                  className={viewMode === 'star' ? 'active' : ''}
+                  onClick={() => setViewMode('star')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <StarIcon size={14} />
+                  {language === 'zh' ? '星图' : 'Star'}
+                </button>
+                <button
+                  className={viewMode === 'river' ? 'active' : ''}
+                  onClick={() => setViewMode('river')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <WaveIcon size={14} />
+                  {language === 'zh' ? '河流' : 'River'}
+                </button>
               </div>
             </div>
-          </section>
+
+            <div style={{ pointerEvents: 'none' }}>
+              {viewMode === 'star' ? (
+                <StarMap
+                  wishes={demoWishes}
+                  selectedWishId={null}
+                  onWishSelect={() => {}}
+                  onWishClick={() => {}}
+                />
+              ) : (
+                <RiverMap
+                  wishes={demoWishes}
+                  selectedWishId={null}
+                  onWishSelect={() => {}}
+                  onWishClick={() => {}}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Demo wishes as pinned notes — tap any to be invited in */}
+          <div className={styles.shelf}>
+            {demoWishes.map((wish) => (
+              <div key={wish.id} className={styles.shelfCard}>
+                <WishNote wish={wish} onClick={() => setShowLoginPrompt(true)} />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Login Prompt Modal */}
@@ -412,20 +366,48 @@ export default function OverviewPage() {
           <p className="muted">{language === 'zh' ? '加载中...' : 'Loading...'}</p>
         </div>
       ) : (
-        <div className={styles.layout}>
-          {/* Left sidebar - Wish list */}
-          <aside className={styles.sidebar}>
-            <div>
-              <h2>{language === 'zh' ? '你的愿望' : 'Your Wishes'}</h2>
-              <p className={styles.sidebarDesc}>
-                {language === 'zh' 
-                  ? '梦想没有截止日期。只要它一直在你身边。' 
-                  : "There's no deadline for a dream. Just keep it close."
-                }
-              </p>
+        <div>
+          {/* Map — full-bleed hero (map-app pattern: the canvas is the page) */}
+          <div className={styles.mapFullBleed} style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: 56, right: 'max(16px, calc((100% - 1120px) / 2))', zIndex: 10 }}>
+              <div className={styles.viewToggle}>
+                <button
+                  className={viewMode === 'star' ? 'active' : ''}
+                  onClick={() => setViewMode('star')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <StarIcon size={14} />
+                  {language === 'zh' ? '星图' : 'Star'}
+                </button>
+                <button
+                  className={viewMode === 'river' ? 'active' : ''}
+                  onClick={() => setViewMode('river')}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <WaveIcon size={14} />
+                  {language === 'zh' ? '河流' : 'River'}
+                </button>
+              </div>
             </div>
+            {viewMode === 'star' ? (
+              <StarMap
+                wishes={filteredWishes}
+                selectedWishId={selectedWish?.id}
+                onWishSelect={handleWishSelect}
+                onWishClick={handleWishClick}
+              />
+            ) : (
+              <RiverMap
+                wishes={filteredWishes}
+                selectedWishId={selectedWish?.id}
+                onWishSelect={handleWishSelect}
+                onWishClick={handleWishClick}
+              />
+            )}
+          </div>
 
-            {/* Search */}
+          {/* Slim toolbar above the shelf: search + filters in one row */}
+          <div className={styles.shelfBar}>
             <div className={styles.search}>
               <span style={{ color: 'rgba(74,85,104,0.8)', fontSize: 14 }}>⌕</span>
               <input
@@ -506,119 +488,35 @@ export default function OverviewPage() {
               </select>
             </div>
 
-            {/* Wish list */}
-            <div className={styles.wishList}>
-              {filteredWishes.length === 0 ? (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--text)' }}>
-                  {language === 'zh' ? '没有找到愿望' : 'No wishes found'}
-                </div>
-              ) : (
-                filteredWishes.map((wish: LocalWish) => {
-                  const levelInfo = wish.last_level 
-                    ? CONNECTION_LEVELS.find((l: { id: string; label: string; labelEn: string }) => l.id === wish.last_level)
-                    : null;
-                  return (
-                    <div
-                      key={wish.id}
-                      className={`${styles.wishItem} ${selectedWish?.id === wish.id ? styles.wishItemActive : ''}`}
-                      onClick={() => {
-                        setSelectedWish(wish);
+          </div>
+
+          {/* Wish shelf — the same pinned paper cards as the Gallery.
+              Click once to light the wish up on the map, click again for detail.
+              Desktop: horizontal shelf. Mobile: two-column mood board. */}
+          {filteredWishes.length === 0 ? (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text)' }}>
+              {language === 'zh' ? '没有找到愿望' : 'No wishes found'}
+            </div>
+          ) : (
+            <div className={styles.shelf}>
+              {filteredWishes.map((wish: LocalWish) => (
+                <div key={wish.id} className={styles.shelfCard}>
+                  <WishNote
+                    wish={wish}
+                    active={selectedWish?.id === wish.id}
+                    onPinToggle={handlePinToggle}
+                    onClick={() => {
+                      if (selectedWish?.id === wish.id) {
                         setDetailWish(wish);
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <b style={{ display: 'block', fontSize: 13, lineHeight: 1.35, marginBottom: 3 }}>{wish.title}</b>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                            {wish.domain && (
-                              <span style={{
-                                fontSize: 10,
-                                color: 'var(--wish)',
-                                background: 'rgba(107, 92, 142, 0.1)',
-                                padding: '1px 6px',
-                                borderRadius: 4,
-                              }}>
-                                {getDomainLabel(wish.domain, language)}
-                              </span>
-                            )}
-                            {wish.stage && (
-                              <span style={{ fontSize: 10, color: 'var(--text)' }}>{getStageLabel(wish.stage, language)}</span>
-                            )}
-                          </div>
-                        </div>
-                        {levelInfo ? (
-                          <span className={styles.levelBadge} style={{ flexShrink: 0 }}>
-                            <ConnectionIcon levelId={levelInfo.id} size={10} />
-                            {language === 'zh' ? levelInfo.label : levelInfo.labelEn}
-                          </span>
-                        ) : (
-                          <span className={styles.levelBadge} style={{ flexShrink: 0, opacity: 0.5 }}>
-                            {language === 'zh' ? '未连接' : 'Not connected'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className={styles.whisper}>
-              {language === 'zh' ? '你可以慢慢来。' : 'Take your time.'}<br/>
-              {language === 'zh' ? '愿望会陪你一辈子。' : 'Wishes stay with you forever.'}
-            </div>
-          </aside>
-
-          {/* Right side - Map */}
-          <section>
-            {/* Map with view toggle inside */}
-            <div style={{ position: 'relative' }}>
-              {/* View toggle inside map */}
-              <div 
-                style={{ 
-                  position: 'absolute',
-                  top: 56,
-                  right: 16,
-                  zIndex: 10,
-                }}
-              >
-                <div className={styles.viewToggle}>
-                  <button 
-                    className={viewMode === 'star' ? 'active' : ''} 
-                    onClick={() => setViewMode('star')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <StarIcon size={14} />
-                    {language === 'zh' ? '星图' : 'Star'}
-                  </button>
-                  <button 
-                    className={viewMode === 'river' ? 'active' : ''} 
-                    onClick={() => setViewMode('river')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <WaveIcon size={14} />
-                    {language === 'zh' ? '河流' : 'River'}
-                  </button>
+                      } else {
+                        setSelectedWish(wish);
+                      }
+                    }}
+                  />
                 </div>
-              </div>
-              
-              {viewMode === 'star' ? (
-                <StarMap
-                  wishes={filteredWishes}
-                  selectedWishId={selectedWish?.id}
-                  onWishSelect={handleWishSelect}
-                  onWishClick={handleWishClick}
-                />
-              ) : (
-                <RiverMap
-                  wishes={filteredWishes}
-                  selectedWishId={selectedWish?.id}
-                  onWishSelect={handleWishSelect}
-                  onWishClick={handleWishClick}
-                />
-              )}
+              ))}
             </div>
-          </section>
+          )}
         </div>
       )}
 
@@ -629,6 +527,7 @@ export default function OverviewPage() {
           onClose={() => setDetailWish(null)}
           onConnect={handleConnect}
           onPinToggle={handlePinToggle}
+          onWishChange={reload}
         />
       )}
     </PageShell>

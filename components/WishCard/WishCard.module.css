@@ -3,20 +3,62 @@
  * Styles for wish card components
  */
 
-/* Main wish card */
+/* Main wish card — a small sheet of paper pinned to the wish board:
+   a seeded ±1.6° tilt (set as --tilt by the component), a double paper
+   shadow, one washi-tape corner, and a hand-drawn wobbly border on hover. */
 .wishCard {
-  background: var(--card);
-  border: 1px solid var(--border);
+  position: relative;
+  background: transparent;
+  border: none;
   border-radius: 18px;
   padding: 20px;
-  backdrop-filter: blur(10px);
-  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+  transform: rotate(var(--tilt, 0deg));
+  transition: transform 160ms ease;
 }
 
 .wishCard:hover {
-  transform: translateY(-4px);
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(130, 110, 170, 0.7);
+  transform: translateY(-4px) rotate(var(--tilt, 0deg));
+}
+
+/* Hand-drawn paper clip — one continuous ink line sliding over the sheet's
+   top-left corner (matches the single-line motif). */
+.wishCard::before {
+  content: '';
+  position: absolute;
+  top: -13px;
+  left: 16px;
+  width: 24px;
+  height: 34px;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2035%2051'%3E%3Cpath%20d='M13%208%20Q13%203%2018.5%203%20Q24%203%2024%209%20L24%2040%20Q24%2048%2017.5%2048%20Q11%2048%2011%2040%20L11%2016%20Q11%2011.5%2015%2011.5%20Q19%2011.5%2019%2016%20L19%2038'%20fill='none'%20stroke='%235B4B84'%20stroke-width='2.2'%20stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / contain;
+  transform: rotate(calc(var(--tilt, 0deg) + 37deg));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* The paper itself: fuzzy hand-torn edge, always on. The squiggle filter
+   lives on this background-only layer (z-index -1, under the content) so
+   ink and text stay crisp while the sheet's edge trembles. */
+.wishCard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(145, 127, 185, 0.55);
+  border-radius: 24px;
+  box-shadow:
+    0 1px 2px rgba(46, 43, 51, 0.07),
+    0 6px 14px rgba(46, 43, 51, 0.06);
+  filter: url(#wf-squiggle-soft);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  pointer-events: none;
+}
+
+.wishCard:hover::after {
+  border-color: rgba(124, 106, 170, 0.8);
+  box-shadow:
+    0 2px 3px rgba(46, 43, 51, 0.08),
+    0 10px 22px rgba(46, 43, 51, 0.09);
 }
 
 .wishCardCompact {
@@ -34,8 +76,9 @@
 }
 
 .title {
-  font-size: 16px;
-  font-weight: 700;
+  font-family: var(--font-serif), ui-serif, serif;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--ink);
   margin: 0;
   line-height: 1.4;
@@ -132,8 +175,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 12px 8px;
+  gap: 3px;
+  padding: 8px 6px;
   border: 1px solid rgba(200, 195, 220, 0.5);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.65);
@@ -160,12 +203,12 @@
 }
 
 .connectionIcon {
-  font-size: 20px;
+  font-size: 17px;
   color: var(--wish);
 }
 
 .connectionLabel {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text);
   font-weight: 500;
 }
@@ -355,9 +398,9 @@
 
 .actionBtn {
   flex: 1;
-  padding: 12px 16px;
+  padding: 9px 14px;
   border-radius: 14px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 160ms ease;
@@ -380,7 +423,7 @@
   background: #5a4d7a;
 }
 
-/* Gallery grid */
+/* Gallery grid (legacy list layout, kept for other pages) */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -389,6 +432,116 @@
 
 .galleryCard {
   cursor: pointer;
+}
+
+/* ===== The gallery space: the same paper world as the landing page's
+   "Your wishes live here." scene — full-bleed sheet, soft drifting river
+   lines behind, PaperCard sheets pinned on top ===== */
+.gallerySpace {
+  position: relative;
+  margin: 26px 0 70px;
+  /* Full-bleed: escape the page container and own the viewport */
+  width: min(100vw - clamp(24px, 5vw, 72px), 1760px);
+  margin-left: calc(50% - min(100vw - clamp(24px, 5vw, 72px), 1760px) / 2);
+  padding: clamp(12px, 1.8vw, 26px) clamp(6px, 1.2vw, 20px) clamp(28px, 4vw, 56px);
+}
+
+/* The river flows quietly beneath the pinned sheets */
+.galleryRivers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.riverLine {
+  animation: galleryDrift 18s linear infinite;
+}
+
+@keyframes galleryDrift {
+  to { stroke-dashoffset: -76; }
+}
+
+.board {
+  position: relative;
+  /* Grid fallback (10+ wishes, and mobile): columns grow with the viewport */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: clamp(24px, 2.6vw, 38px) clamp(18px, 2vw, 30px);
+  padding: 10px 4px 10px;
+  align-items: start;
+}
+
+.boardNote {
+  min-width: 0;
+}
+
+/* Constellation layout: few wishes arrange like stars — one at the center,
+   two facing each other, three a pyramid, five a star, seven a dipper.
+   Positions come from the page as --cx/--cy percentages. */
+.constellation {
+  position: relative;
+  min-height: var(--constH, 720px);
+}
+
+.constNote {
+  position: absolute;
+  left: var(--cx, 50%);
+  top: var(--cy, 50%);
+  transform: translate(-50%, -50%);
+  width: min(330px, 80vw);
+}
+
+@media (max-width: 720px) {
+  /* Narrow screens: constellations collapse back into the grid */
+  .constellation {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px 12px;
+    padding: 10px 4px;
+  }
+
+  .constNote {
+    position: static;
+    transform: none;
+    width: auto;
+  }
+}
+
+/* Selected note ring (the shell itself lives in components/PaperCard) */
+.noteActive {
+  box-shadow:
+    0 0 0 2px rgba(91, 75, 132, 0.45),
+    0 6px 14px rgba(46, 43, 51, 0.06);
+}
+
+.noteCaption {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 6px 0;
+}
+
+.noteTitle {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-serif), ui-serif, serif;
+  font-size: 17px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .board {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px 12px;
+  }
+
+  .gallerySpace {
+    margin-bottom: 48px;
+  }
 }
 
 /* Empty state */

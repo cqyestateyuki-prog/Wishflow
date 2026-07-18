@@ -102,61 +102,55 @@ export default function WishCard({
     }
   };
 
-  const cardClass = compact 
-    ? `${styles.wishCard} ${styles.wishCardCompact}` 
+  const cardClass = compact
+    ? `${styles.wishCard} ${styles.wishCardCompact}`
     : styles.wishCard;
 
+  // Seeded pinboard tilt: same wish, same tiny lean — like a sheet you pinned.
+  const seed = Array.from(wish.id).reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  const tilt = ((seed % 7) - 3) * 0.55; // -1.65° … 1.65°
+  const cardStyle: React.CSSProperties = {
+    ...(onClick ? { cursor: 'pointer' } : undefined),
+    ['--tilt' as string]: `${tilt}deg`,
+  };
+
   return (
-    <div className={cardClass} onClick={onClick} style={onClick ? { cursor: 'pointer' } : undefined}>
+    <div className={cardClass} onClick={onClick} style={cardStyle}>
       {/* Visualization */}
-      {showVisualization && (
-        <WishVisualization 
-          wish={wish} 
-          size={compact ? 'small' : 'medium'}
-          onClick={onVisualizationClick}
-        />
+      {/* Pin lives in the sheet's top corner, like a real pin */}
+      {onPinToggle && (
+        <button
+          className={`${styles.pinButton} ${wish.pinned ? styles.pinButtonActive : ''}`}
+          style={{ position: 'absolute', top: 10, right: 12, zIndex: 2 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onPinToggle(wish.id);
+          }}
+          title={wish.pinned
+            ? (language === 'zh' ? '取消置顶' : 'Unpin')
+            : (language === 'zh' ? '置顶' : 'Pin')
+          }
+        >
+          {wish.pinned ? <PinIconSolid /> : <PinIcon />}
+        </button>
       )}
 
-      {/* Header with title and pin */}
-      <div className={styles.header}>
-        <h3 className={compact ? `${styles.title} ${styles.titleCompact}` : styles.title}>
+      {/* The drawing owns the card, centered — everything else stays quiet */}
+      {showVisualization && (
+        <div style={{ display: 'grid', placeItems: 'center' }}>
+          <WishVisualization
+            wish={wish}
+            size={compact ? 'small' : 'large'}
+            onClick={onVisualizationClick}
+          />
+        </div>
+      )}
+
+      {/* Title — no badge chatter (domain / stage / level chips removed) */}
+      <div className={styles.header} style={{ justifyContent: 'center' }}>
+        <h3 className={compact ? `${styles.title} ${styles.titleCompact}` : styles.title} style={{ textAlign: 'center' }}>
           {wish.title}
         </h3>
-        {onPinToggle && (
-          <button
-            className={`${styles.pinButton} ${wish.pinned ? styles.pinButtonActive : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onPinToggle(wish.id);
-            }}
-            title={wish.pinned 
-              ? (language === 'zh' ? '取消置顶' : 'Unpin') 
-              : (language === 'zh' ? '置顶' : 'Pin')
-            }
-          >
-            {wish.pinned ? <PinIconSolid /> : <PinIcon />}
-          </button>
-        )}
-      </div>
-
-      {/* Badges: domain, stage, level */}
-      <div className={styles.badges}>
-        {wish.domain && (
-          <span className={`${styles.badge} ${styles.badgeDomain}`}>
-            <DomainIcon size={12} />
-            {getDomainLabel(wish.domain, language)}
-          </span>
-        )}
-        {wish.stage && (
-          <span className={styles.badge}>
-            {getStageLabel(wish.stage, language)}
-          </span>
-        )}
-        {levelInfo && (
-          <span className={`${styles.badge} ${styles.badgeLevel}`}>
-            <ConnectionIcon levelId={levelInfo.id} size={12} /> {language === 'zh' ? levelInfo.label : levelInfo.labelEn}
-          </span>
-        )}
       </div>
 
       {/* End scene / description */}

@@ -1,0 +1,63 @@
+/* PaperCard — THE wish card shell, shared by the landing arc and the gallery.
+   A white sheet with a fuzzy hand-torn edge (the #wf-squiggle displacement
+   filter lives on a background-only layer, so ink and text stay crisp),
+   a hand-drawn paper clip, a seeded lean. One visual language everywhere. */
+
+.card {
+  position: relative;
+  padding: 34px 20px 16px;
+}
+
+/* The paper itself: filtered separately so the deckle edge wobbles while
+   the content above never distorts. */
+.sheet {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  border: 1.5px solid rgba(145, 127, 185, 0.55);
+  border-radius: 26px;
+  box-shadow:
+    0 1px 2px rgba(46, 43, 51, 0.08),
+    0 6px 14px rgba(46, 43, 51, 0.06);
+  filter: url(#wf-squiggle-soft);
+  transition: box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Managed mode: the shell owns tilt + hover lift (gallery). The landing arc
+   drives transforms per-frame itself and uses .static instead. */
+.managed {
+  transform: rotate(var(--tilt, 0deg)) scale(var(--cardScale, 1));
+  transition: transform 160ms ease;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable.managed:hover {
+  transform: translateY(-4px) rotate(var(--tilt, 0deg)) scale(var(--cardScale, 1));
+}
+
+.clickable:hover .sheet {
+  border-color: rgba(124, 106, 170, 0.8);
+  box-shadow:
+    0 2px 3px rgba(46, 43, 51, 0.08),
+    0 10px 22px rgba(46, 43, 51, 0.09);
+}
+
+/* The hand-drawn paper clip over the top edge */
+.clip {
+  position: absolute;
+  top: -15px;
+  left: var(--clipLeft, 18px);
+  width: 27px;
+  height: 39px;
+  transform: rotate(calc(var(--tilt, 0deg) + var(--clipRot, 37deg)));
+  pointer-events: none;
+  z-index: 2;
+}

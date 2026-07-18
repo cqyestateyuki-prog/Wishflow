@@ -10,6 +10,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import LoginPrompt from '@/components/LoginPrompt';
 import WishCard from '@/components/WishCard';
+import WishNote from '@/components/WishCard/WishNote';
 import WishDetail from '@/components/WishCard/WishDetail';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLanguage } from '@/components/LanguageProvider';
@@ -19,6 +20,25 @@ import { supabase } from '@/lib/supabase/client';
 import cardStyles from '@/components/WishCard/WishCard.module.css';
 
 type SortOption = 'recent' | 'created' | 'pinned';
+
+// Constellation positions (% of the gallery space) for small counts —
+// wishes arrange like stars: alone at the center, a pair facing each other,
+// a pyramid, a five-pointed star, a dipper… 10+ falls back to the grid.
+const CONSTELLATIONS: Record<number, Array<[number, number]>> = {
+  1: [[50, 50]],
+  2: [[31, 44], [69, 58]],
+  3: [[50, 22], [28, 70], [72, 70]],
+  4: [[29, 25], [71, 21], [25, 72], [71, 76]],
+  5: [[50, 15], [23, 41], [77, 41], [33, 80], [67, 80]],
+  6: [[50, 15], [79, 33], [79, 68], [50, 86], [21, 68], [21, 33]],
+  7: [[14, 26], [34, 18], [15, 60], [36, 54], [55, 32], [72, 52], [88, 30]],
+  8: [[20, 22], [46, 16], [72, 22], [88, 40], [13, 56], [38, 68], [64, 62], [86, 80]],
+  9: [[18, 20], [50, 16], [82, 20], [16, 53], [50, 49], [84, 53], [22, 84], [54, 86], [84, 82]],
+};
+
+const CONST_HEIGHTS: Record<number, number> = {
+  1: 560, 2: 660, 3: 860, 4: 920, 5: 980, 6: 1000, 7: 940, 8: 1040, 9: 1150,
+};
 
 export default function WishesPage() {
   const { language } = useLanguage();
@@ -409,17 +429,70 @@ export default function WishesPage() {
           </p>
         </div>
       ) : (
-        <div className={cardStyles.gallery}>
-          {sortedWishes.map((wish) => (
-            <div key={wish.id} className={cardStyles.galleryCard}>
-              <WishCard
-                wish={wish}
-                compact={true}
-                onPinToggle={handlePinToggle}
-                onClick={() => setDetailWish(wish)}
-              />
-            </div>
-          ))}
+        // The gallery: the same paper world as the landing scene — sheets
+        // pinned over a quietly drifting river
+        <div className={cardStyles.gallerySpace}>
+          <svg className={cardStyles.galleryRivers} viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" strokeLinecap="round">
+              <path className={cardStyles.riverLine} d="M -20 210 Q 240 180 480 212 Q 720 244 960 208 Q 1200 176 1460 210"
+                stroke="#9C8CC2" strokeWidth="1.8" strokeDasharray="22 15" opacity="0.5" />
+              <path className={cardStyles.riverLine} d="M -20 470 Q 280 440 560 472 Q 840 504 1120 468 Q 1300 448 1460 470"
+                stroke="#B5A8D0" strokeWidth="1.5" strokeDasharray="16 13" opacity="0.42" />
+              <path className={cardStyles.riverLine} d="M -20 730 Q 260 700 520 732 Q 800 766 1080 728 Q 1290 704 1460 730"
+                stroke="#B5A8D0" strokeWidth="1.4" strokeDasharray="26 18" opacity="0.32" />
+              {/* birds + a low dashed sun, same sky as the landing */}
+              <path d="M 1150 90 q 9 -9 18 0 q 9 -9 18 0 M 1230 120 q 7 -7 14 0" stroke="#B5A8D0" strokeWidth="1.5" opacity="0.6" />
+              <circle cx="180" cy="105" r="42" stroke="#B5A8D0" strokeWidth="1.5" strokeDasharray="6 8" opacity="0.55" />
+            </g>
+          </svg>
+          {(() => {
+            const pattern = CONSTELLATIONS[sortedWishes.length];
+            if (pattern) {
+              return (
+                <div
+                  className={cardStyles.constellation}
+                  style={{ ['--constH' as string]: `${CONST_HEIGHTS[sortedWishes.length]}px` }}
+                >
+                  {sortedWishes.map((wish, i) => {
+                    // tiny seeded jitter so no two constellations feel stamped
+                    const seed = Array.from(wish.id).reduce((s, ch) => s + ch.charCodeAt(0), 0);
+                    const jx = ((seed % 5) - 2) * 0.8;
+                    const jy = ((seed % 7) - 3) * 0.7;
+                    const [cx, cy] = pattern[i];
+                    return (
+                      <div
+                        key={wish.id}
+                        className={cardStyles.constNote}
+                        style={{
+                          ['--cx' as string]: `${cx + jx}%`,
+                          ['--cy' as string]: `${cy + jy}%`,
+                        }}
+                      >
+                        <WishNote
+                          wish={wish}
+                          onPinToggle={handlePinToggle}
+                          onDetails={(w) => setDetailWish(w)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            }
+            return (
+              <div className={cardStyles.board}>
+                {sortedWishes.map((wish) => (
+                  <div key={wish.id} className={cardStyles.boardNote}>
+                    <WishNote
+                      wish={wish}
+                      onPinToggle={handlePinToggle}
+                      onDetails={(w) => setDetailWish(w)}
+                    />
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -430,6 +503,7 @@ export default function WishesPage() {
           onClose={() => setDetailWish(null)}
           onConnect={handleConnect}
           onPinToggle={handlePinToggle}
+          onWishChange={reload}
         />
       )}
     </PageShell>

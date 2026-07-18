@@ -164,3 +164,35 @@ export function makeRiverline(height: number, seed: number): Riverline {
       catmullRomOpen(pts.map((p) => ({ x: p.x, y: p.y + offset }))),
   };
 }
+
+// Iterative pairwise repulsion — wishes may drift close, but never overlap.
+// Mutates the position objects in place; deterministic and cheap for small N.
+export function resolveCollisions(
+  points: Array<{ cx: number; cy: number }>,
+  minDist: number,
+  iterations = 28
+): void {
+  for (let it = 0; it < iterations; it++) {
+    let moved = false;
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const a = points[i];
+        const b = points[j];
+        const dx = b.cx - a.cx;
+        const dy = b.cy - a.cy;
+        const d = Math.hypot(dx, dy);
+        if (d < minDist) {
+          const push = (minDist - Math.max(d, 0.01)) / 2;
+          const ux = d > 0.01 ? dx / d : 1;
+          const uy = d > 0.01 ? dy / d : 0.3;
+          a.cx -= ux * push;
+          a.cy -= uy * push;
+          b.cx += ux * push;
+          b.cy += uy * push;
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+}

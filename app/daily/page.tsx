@@ -434,7 +434,9 @@ export default function DailyPage() {
             }
           </p>
 
-          <div style={{ display: 'grid', gap: 16 }}>
+          {/* Cards keep a book-page width and center — never a full-bleed
+              stretch with the art lost in one corner */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 500px))', justifyContent: 'center', gap: 24 }}>
             {recommendedWishes.map((wish) => {
               const isConnectedToday = connectedToday.has(wish.id) ||
                 todayConnections.some(c => c.wish_id === wish.id);
@@ -495,6 +497,7 @@ export default function DailyPage() {
           onClose={() => setDetailWish(null)}
           onConnect={handleConnect}
           onPinToggle={handlePinToggle}
+          onWishChange={reload}
         />
       )}
     </PageShell>

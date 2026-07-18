@@ -12,7 +12,7 @@ import { LocalWish } from '@/lib/localStore';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useSettings } from '@/hooks/useSettings';
 import MapTooltip from './MapTooltip';
-import { makeWobblyRing, makeDust, truncateTitle } from './artUtils';
+import { makeDust, truncateTitle, resolveCollisions } from './artUtils';
 import styles from './WishMap.module.css';
 
 type StarMapProps = {
@@ -29,8 +29,6 @@ const CENTER_Y = 380;
 // Vertical compression of orbits for a gentle look-down perspective
 const RY_FACTOR = 0.84;
 
-// Minimum arc distance between nodes (in pixels along the circumference)
-const MIN_ARC_DISTANCE = 60;
 
 // Normalize stage to one of the 5 main rings
 function normalizeStageForStar(stage: string | null): string {
@@ -56,73 +54,99 @@ const RING_RADII: Record<string, number> = {
 
 const RING_ORDER = ['13-18', '18-25', '25-35', '35-50', '50+'];
 
-// Hand-drawn orbits, one per life stage — deterministic seeds keep SSR/CSR identical
-const RINGS = RING_ORDER.map((stage, i) => ({
-  stage,
-  rx: RING_RADII[stage],
-  ring: makeWobblyRing(
-    CENTER_X,
-    CENTER_Y,
-    RING_RADII[stage],
-    RING_RADII[stage] * RY_FACTOR,
-    41 + i * 17
-  ),
-}));
+// ── A real galaxy: two logarithmic spiral arms, r = A·e^(Bθ) ──
+// Life stages are radius bands; wishes are stars strung along the arms.
+const SPIRAL_A = 62;
+const SPIRAL_B = 0.3;
+const ARM_PHASES = [0, Math.PI];
+const thetaAtR = (r: number) => Math.log(r / SPIRAL_A) / SPIRAL_B;
 
-const RING_BY_STAGE = Object.fromEntries(RINGS.map((r) => [r.stage, r]));
+function makeArmPath(phase: number, seed: number): string {
+  const pts: string[] = [];
+  const maxTheta = thetaAtR(372);
+  let s = seed;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  for (let t = 0; t <= maxTheta + 0.001; t += 0.12) {
+    const wob = 1 + (rand() - 0.5) * 0.05;
+    const r = SPIRAL_A * Math.exp(SPIRAL_B * t) * wob;
+    const x = CENTER_X + Math.cos(t + phase) * r;
+    const y = CENTER_Y + Math.sin(t + phase) * r * RY_FACTOR;
+    pts.push(`${pts.length ? 'L' : 'M'} ${x.toFixed(1)} ${y.toFixed(1)}`);
+  }
+  return pts.join(' ');
+}
 
-// Starfield dust across the whole canvas
-const DUST = makeDust(WIDTH, HEIGHT, 72, 7);
+const ARMS = ARM_PHASES.map((p, i) => makeArmPath(p, 77 + i * 31));
 
-// Position nodes ON the wobbly ring (same perturbation as the drawn orbit)
+// The milky band: dense star-dust scattered along each arm
+function makeArmDust(): Array<{ x: number; y: number; r: number; o: number }> {
+  const out: Array<{ x: number; y: number; r: number; o: number }> = [];
+  let s = 12345;
+  const rand = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  ARM_PHASES.forEach(phase => {
+    const maxTheta = thetaAtR(368);
+    for (let t = 0.25; t < maxTheta; t += 0.085) {
+      if (rand() < 0.3) continue;
+      const r = SPIRAL_A * Math.exp(SPIRAL_B * t);
+      const spread = 10 + r * 0.07;
+      const rr = r + (rand() - 0.5) * spread * 2;
+      const x = CENTER_X + Math.cos(t + phase) * rr;
+      const y = CENTER_Y + Math.sin(t + phase) * rr * RY_FACTOR;
+      out.push({ x, y, r: 0.7 + rand() * 1.5, o: 0.12 + rand() * 0.4 });
+    }
+  });
+  return out;
+}
+const ARM_DUST = makeArmDust();
+
+// Sparse background specks beyond the arms
+const DUST = makeDust(WIDTH, HEIGHT, 22, 7);
+
+// A wish sits ON an arm at its life-stage radius; stage-mates slide inward /
+// outward along the arm and alternate between the two arms — a star stream,
+// never a queue on a circle.
 function getNodePosition(
   normalizedStage: string,
   indexInRing: number,
   totalInRing: number,
   ringIndex: number
-): { cx: number; cy: number } {
-  const entry = RING_BY_STAGE[normalizedStage] || RING_BY_STAGE['25-35'];
-  const baseRadius = entry.rx;
-
-  const minAngle = MIN_ARC_DISTANCE / baseRadius;
-  const totalAngleNeeded = totalInRing * minAngle;
-  const actualSpacing =
-    totalAngleNeeded < Math.PI * 1.8
-      ? (Math.PI * 1.8) / Math.max(totalInRing, 1)
-      : minAngle;
-  const ringOffset = (ringIndex * Math.PI) / 4 - Math.PI / 2;
-  const angle = ringOffset + indexInRing * actualSpacing;
-
-  const k = entry.ring.radiusAt(angle);
+): { cx: number; cy: number; labelDy: number } {
+  const baseR = RING_RADII[normalizedStage] || 240;
+  const arm = (indexInRing + ringIndex) % ARM_PHASES.length;
+  const phase = ARM_PHASES[arm];
+  const step = Math.ceil(indexInRing / 2) * (indexInRing % 2 === 1 ? 34 : -34);
+  const r = Math.min(362, Math.max(70, baseR + step));
+  const theta = thetaAtR(r);
   return {
-    cx: CENTER_X + Math.cos(angle) * baseRadius * k,
-    cy: CENTER_Y + Math.sin(angle) * baseRadius * RY_FACTOR * k,
+    cx: CENTER_X + Math.cos(theta + phase) * r,
+    cy: CENTER_Y + Math.sin(theta + phase) * r * RY_FACTOR,
+    // labels alternate above/below their star so arm-neighbours never collide
+    labelDy: indexInRing % 2 === 0 ? -14 : 22,
   };
 }
 
-function getLevelClass(level: string | null): string {
-  switch (level) {
-    case 'minimum': return styles.nodeLow;
-    case 'normal': return styles.nodeMid;
-    case 'deep': return styles.nodeDeep;
-    default: return styles.nodeLow;
+// Ink-drawn star glyphs — contrast comes from solid ink and line detail, not
+// glow. Depth of connection = richer drawing: hollow dot → dot+ring → dot+
+// ring+rays, in deepening ink purples (2026-07-10 去脏提对比改版).
+function StarGlyph({ cx, cy, level }: { cx: number; cy: number; level: string | null }) {
+  const deep = level === 'deep';
+  const mid = level === 'normal';
+  if (!deep && !mid) {
+    return <circle cx={cx} cy={cy} r={5} fill="#FAF9F7" stroke="#7E6CA8" strokeWidth={2} />;
   }
-}
-
-function getHaloFill(level: string | null): string {
-  switch (level) {
-    case 'normal': return 'url(#sm-halo-mid)';
-    case 'deep': return 'url(#sm-halo-deep)';
-    default: return 'url(#sm-halo-low)';
-  }
-}
-
-function getBodyFill(level: string | null): string {
-  switch (level) {
-    case 'normal': return 'url(#sm-body-mid)';
-    case 'deep': return 'url(#sm-body-deep)';
-    default: return 'url(#sm-body-low)';
-  }
+  const body = deep ? '#4A3D70' : '#5B4B84';
+  return (
+    <>
+      <circle cx={cx} cy={cy} r={deep ? 6 : 5.5} fill={body} />
+      <circle cx={cx} cy={cy} r={deep ? 10.5 : 9} fill="none" stroke={body} strokeWidth={deep ? 1.3 : 1.1} opacity={0.5} />
+      {deep && (
+        <path
+          d={`M ${cx} ${cy - 13} L ${cx} ${cy - 18} M ${cx + 13} ${cy} L ${cx + 18} ${cy} M ${cx} ${cy + 13} L ${cx} ${cy + 18} M ${cx - 13} ${cy} L ${cx - 18} ${cy}`}
+          stroke={body} strokeWidth={1.6} strokeLinecap="round" opacity={0.75}
+        />
+      )}
+    </>
+  );
 }
 
 // Wobbly bezier link from the core to a node
@@ -152,7 +176,7 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
   }, [wishes]);
 
   const nodePositions = useMemo(() => {
-    return wishes.map(wish => {
+    const nodes = wishes.map(wish => {
       const ring = normalizeStageForStar(wish.stage);
       const ringWishes = wishesByRing[ring] || [];
       const indexInRing = ringWishes.findIndex(w => w.id === wish.id);
@@ -162,6 +186,9 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
         position: getNodePosition(ring, indexInRing, ringWishes.length, ringIndex >= 0 ? ringIndex : 2),
       };
     });
+    // Stars may share an arm, never a spot
+    resolveCollisions(nodes.map(n => n.position), 56);
+    return nodes;
   }, [wishes, wishesByRing]);
 
   const selectedPosition = useMemo(() => {
@@ -212,119 +239,135 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
           role="img"
           aria-label={language === 'zh' ? '愿力地图（星图）' : 'Wish Map (Star)'}
         >
+          {/* No nebula washes, no gradient fills — clean paper, ink lines only.
+              The old full-canvas purple gradients read as grime (2026-07-10). */}
+
           <defs>
-            {/* Paper nebula — layered, very quiet */}
-            <radialGradient id="sm-nebula" cx="50%" cy="48%" r="62%">
-              <stop offset="0%" stopColor="rgba(145, 127, 185, 0.15)" />
-              <stop offset="45%" stopColor="rgba(230, 225, 240, 0.2)" />
-              <stop offset="100%" stopColor="rgba(250, 249, 247, 0)" />
+            {/* The galaxy's soft heart — one same-family radial, whisper-low */}
+            <radialGradient id="sm-corehaze">
+              <stop offset="0%" stopColor="rgba(155, 143, 196, 0.2)" />
+              <stop offset="60%" stopColor="rgba(155, 143, 196, 0.08)" />
+              <stop offset="100%" stopColor="rgba(155, 143, 196, 0)" />
             </radialGradient>
-            <radialGradient id="sm-nebula-drift" cx="72%" cy="24%" r="46%">
-              <stop offset="0%" stopColor="rgba(205, 194, 230, 0.10)" />
-              <stop offset="100%" stopColor="rgba(250, 249, 247, 0)" />
-            </radialGradient>
-
-            {/* Core */}
-            <radialGradient id="sm-core-halo" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(150, 133, 190, 0.30)" />
-              <stop offset="60%" stopColor="rgba(150, 133, 190, 0.12)" />
-              <stop offset="100%" stopColor="rgba(150, 133, 190, 0)" />
-            </radialGradient>
-            <radialGradient id="sm-core-body" cx="40%" cy="34%" r="75%">
-              <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="70%" stopColor="#F3EFF9" />
-              <stop offset="100%" stopColor="#E9E3F3" />
-            </radialGradient>
-
-            {/* Star-body halos, brightness grows with connection depth */}
-            <radialGradient id="sm-halo-low" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(205, 194, 230, 0.38)" />
-              <stop offset="100%" stopColor="rgba(205, 194, 230, 0)" />
-            </radialGradient>
-            <radialGradient id="sm-halo-mid" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(150, 133, 190, 0.5)" />
-              <stop offset="100%" stopColor="rgba(150, 133, 190, 0)" />
-            </radialGradient>
-            <radialGradient id="sm-halo-deep" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(124, 106, 170, 0.6)" />
-              <stop offset="100%" stopColor="rgba(124, 106, 170, 0)" />
-            </radialGradient>
-
-            {/* Star-body pearls — light falls from upper left */}
-            <radialGradient id="sm-body-low" cx="35%" cy="30%" r="80%">
-              <stop offset="0%" stopColor="#ece6f6" />
-              <stop offset="100%" stopColor="#cdc2e4" />
-            </radialGradient>
-            <radialGradient id="sm-body-mid" cx="35%" cy="30%" r="80%">
-              <stop offset="0%" stopColor="#d3c9ec" />
-              <stop offset="100%" stopColor="#a794d0" />
-            </radialGradient>
-            <radialGradient id="sm-body-deep" cx="35%" cy="30%" r="80%">
-              <stop offset="0%" stopColor="#B3A4D6" />
-              <stop offset="100%" stopColor="#7c6aaa" />
-            </radialGradient>
-
-            {/* Soft blur for the glowing link under-stroke */}
-            <filter id="sm-link-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="4" />
-            </filter>
+            {/* Negative-space halo:每颗星周围挖掉轨道与尘埃,星坐在一小片
+                干净留白里,自己就亮(古典星图的纸媒之光) */}
+            <mask id="sm-holes">
+              <rect x="0" y="0" width={WIDTH} height={HEIGHT} fill="#fff" />
+              {nodePositions.map(({ wish, position }) => (
+                <circle key={wish.id} cx={position.cx} cy={position.cy} r={18} fill="#000" />
+              ))}
+            </mask>
+            {/* Draw-on reveal for the selected link (remounts per selection) */}
+            {selectedPosition && (
+              <mask id="sm-link-reveal">
+                <path
+                  key={selectedWishId}
+                  d={makeWobblyLink(selectedPosition.cx, selectedPosition.cy)}
+                  pathLength={1}
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth={16}
+                  strokeLinecap="round"
+                  strokeDasharray="1 1"
+                  className={styles.linkReveal}
+                />
+              </mask>
+            )}
           </defs>
 
-          <rect x="0" y="0" width={WIDTH} height={HEIGHT} fill="url(#sm-nebula)" />
-          <rect x="0" y="0" width={WIDTH} height={HEIGHT} fill="url(#sm-nebula-drift)" />
+          <g mask="url(#sm-holes)">
+            {/* Starfield dust */}
+            <g aria-hidden="true">
+              {DUST.map((d, i) => (
+                <circle
+                  key={i}
+                  cx={d.x}
+                  cy={d.y}
+                  r={d.r}
+                  className={d.twinkle ? styles.dustTwinkle : styles.dust}
+                  style={
+                    d.twinkle
+                      ? ({
+                          '--dust-base': d.opacity,
+                          animationDuration: `${d.duration}s`,
+                          animationDelay: `${d.delay}s`,
+                        } as React.CSSProperties)
+                      : { opacity: d.opacity }
+                  }
+                />
+              ))}
+            </g>
 
-          {/* Starfield dust */}
-          <g aria-hidden="true">
-            {DUST.map((d, i) => (
-              <circle
-                key={i}
-                cx={d.x}
-                cy={d.y}
-                r={d.r}
-                className={d.twinkle ? styles.dustTwinkle : styles.dust}
-                style={
-                  d.twinkle
-                    ? ({
-                        '--dust-base': d.opacity,
-                        animationDuration: `${d.duration}s`,
-                        animationDelay: `${d.delay}s`,
-                      } as React.CSSProperties)
-                    : { opacity: d.opacity }
-                }
-              />
+            {/* Galactic core haze — the soft heart of the spiral */}
+            <ellipse
+              cx={CENTER_X}
+              cy={CENTER_Y}
+              rx={120}
+              ry={120 * RY_FACTOR}
+              fill="url(#sm-corehaze)"
+              aria-hidden="true"
+            />
+
+            {/* The two spiral arms — each an ink stream with a quiet
+                companion line, the same double-stroke voice as the river */}
+            {ARMS.map((d, i) => (
+              <g key={`arm-${i}`}>
+                <path
+                  d={d}
+                  className={styles.galaxyArmSoft}
+                  transform={`translate(${i === 0 ? 6 : -6} ${i === 0 ? 5 : -5})`}
+                />
+                <path
+                  d={d}
+                  className={styles.galaxyArm}
+                  style={{ animationDelay: `${i * -14}s` }}
+                />
+              </g>
             ))}
+
+            {/* The milky band along the arms */}
+            <g aria-hidden="true">
+              {ARM_DUST.map((d, i) => (
+                <circle key={`ad-${i}`} cx={d.x} cy={d.y} r={d.r} fill="#9B8FC4" opacity={d.o} />
+              ))}
+            </g>
           </g>
 
-          {/* Hand-drawn life-stage orbits */}
-          {RINGS.map((r, i) => (
-            <path
-              key={r.stage}
-              d={r.ring.path}
-              className={`${styles.ring} ${i >= 3 ? styles.ringFaded : i >= 1 ? styles.ringSoft : ''}`}
-              style={{ animationDuration: `${16 + i * 1.5}s` }}
-            />
-          ))}
-
-          {/* Stage labels resting on their orbits */}
-          {RINGS.map((r) => {
-            const labelAngle = -Math.PI / 2.35;
-            const k = r.ring.radiusAt(labelAngle);
+          {/* Stage labels riding the first arm outward */}
+          {RING_ORDER.map((stage) => {
+            const r = RING_RADII[stage];
+            const t = thetaAtR(r);
             return (
               <text
-                key={`label-${r.stage}`}
-                x={CENTER_X + Math.cos(labelAngle) * r.rx * k}
-                y={CENTER_Y + Math.sin(labelAngle) * r.rx * RY_FACTOR * k - 8}
+                key={`label-${stage}`}
+                x={CENTER_X + Math.cos(t) * r}
+                y={CENTER_Y + Math.sin(t) * r * RY_FACTOR - 14}
                 textAnchor="middle"
                 className={styles.ringLabel}
               >
-                {r.stage}
+                {stage}
               </text>
             );
           })}
 
-          {/* Core halo + body */}
-          <circle cx={CENTER_X} cy={CENTER_Y} r={86} fill="url(#sm-core-halo)" className={styles.coreHalo} />
-          <circle cx={CENTER_X} cy={CENTER_Y} r={46} fill="url(#sm-core-body)" className={styles.core} />
+          {/* Core — a compass sun drawn in ink: paper disc, dashed inner ring,
+              and eight breathing tick marks instead of a glow halo */}
+          <g className={styles.coreTicks} aria-hidden="true">
+            {Array.from({ length: 8 }, (_, i) => {
+              const a = (i * Math.PI) / 4;
+              return (
+                <line
+                  key={i}
+                  x1={CENTER_X + Math.cos(a) * 54}
+                  y1={CENTER_Y + Math.sin(a) * 54}
+                  x2={CENTER_X + Math.cos(a) * 61}
+                  y2={CENTER_Y + Math.sin(a) * 61}
+                />
+              );
+            })}
+          </g>
+          <circle cx={CENTER_X} cy={CENTER_Y} r={46} fill="#FFFFFF" stroke="#5B4B84" strokeWidth={2} />
+          <circle cx={CENTER_X} cy={CENTER_Y} r={39} fill="none" stroke="rgba(91, 75, 132, 0.35)" strokeWidth={1.2} strokeDasharray="5 6" />
           <text x={CENTER_X} y={CENTER_Y - 4} textAnchor="middle" className={styles.coreText}>
             {language === 'zh' ? '你' : 'You'}
           </text>
@@ -332,47 +375,50 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
             {language === 'zh' ? '愿力源核' : 'Core'}
           </text>
 
-          {/* Glowing link to the selected wish */}
+          {/* Dashed ink link to the selected wish — drawn on in ~500ms via the
+              reveal mask, then keeps its slow dash drift */}
           {selectedPosition && (
-            <>
-              <path
-                d={makeWobblyLink(selectedPosition.cx, selectedPosition.cy)}
-                className={styles.linkGlow}
-                filter="url(#sm-link-glow)"
-              />
-              <path
-                className={styles.link}
-                d={makeWobblyLink(selectedPosition.cx, selectedPosition.cy)}
-                style={{ opacity: 1 }}
-              />
-            </>
+            <path
+              className={styles.link}
+              d={makeWobblyLink(selectedPosition.cx, selectedPosition.cy)}
+              mask="url(#sm-link-reveal)"
+              style={{ opacity: 1 }}
+            />
           )}
 
-          {/* Wish star-bodies */}
+          {/* Wish stars — ink glyphs, hover scales + dims the other stars
+              (focus by subtraction, not glow), selection gets a slow rotating
+              dashed ring */}
+          <g className={styles.starsGroup}>
           {nodePositions.map(({ wish, position }) => {
             const isActive = selectedWishId === wish.id;
             return (
               <g key={wish.id} className={styles.starNode}>
+                {isActive && (
+                  <circle
+                    cx={position.cx}
+                    cy={position.cy}
+                    r={16}
+                    className={styles.nodeSelRing}
+                  />
+                )}
+                <g className={styles.nodeGlyph}>
+                  <StarGlyph cx={position.cx} cy={position.cy} level={wish.last_level} />
+                </g>
                 <circle
                   cx={position.cx}
                   cy={position.cy}
-                  r={26}
-                  fill={getHaloFill(wish.last_level)}
-                  className={`${styles.nodeHalo} ${isActive ? styles.nodeHaloActive : ''}`}
-                />
-                <circle
-                  cx={position.cx}
-                  cy={position.cy}
-                  r={10}
-                  fill={getBodyFill(wish.last_level)}
-                  className={`${styles.node} ${getLevelClass(wish.last_level)} ${isActive ? styles.nodeActive : ''}`}
+                  r={15}
+                  fill="transparent"
+                  className={styles.nodeHit}
                   onClick={() => handleNodeClick(wish)}
                   onMouseMove={(e) => handleMouseMove(e, wish)}
                   onMouseLeave={handleMouseLeave}
                 />
                 <text
-                  x={position.cx + 16}
-                  y={position.cy + 5}
+                  x={position.cx}
+                  y={position.cy + position.labelDy}
+                  textAnchor="middle"
                   className={styles.nodeLabel}
                 >
                   {truncateTitle(wish.title, 8, 16)}
@@ -380,6 +426,7 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
               </g>
             );
           })}
+          </g>
         </svg>
 
         <MapTooltip
