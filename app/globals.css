@@ -559,3 +559,161 @@ main {
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────
+   Top navigation — one pill-size system, one row down to 360px.
+   Every actionable item (links, Sign in, language toggle) shares the
+   .nav-pill footprint so nothing reads larger or smaller than a neighbor.
+   Defined after .container/.card so the nav's own padding wins. */
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+}
+
+/* Brand block: purple dot + wordmark (+ subtitle on wide screens). */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nav-brand-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--wish);
+  flex: 0 0 auto;
+}
+
+.nav-wordmark {
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.nav-subtitle {
+  display: block;
+  color: var(--text);
+  font-size: 11px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+/* Actions zone fills the remaining width and right-aligns its children. */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+/* The three destination links. Natural width when there's room; shrinks
+   and scrolls horizontally (hidden scrollbar) as a last resort so the
+   page itself never overflows. Sign in + lang toggle stay outside this
+   track, always visible, and their dropdowns never get clipped. */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE / old Edge */
+}
+.nav-links::-webkit-scrollbar { display: none; }  /* WebKit */
+
+.nav-slot {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+/* One pill = one size for every item in the bar. */
+.nav-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 8px 14px;            /* horizontal; vertical absorbed by border-box */
+  border-radius: 999px;
+  font-size: 13.5px;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.nav-pill:hover {
+  background: rgba(155, 143, 196, 0.08);
+}
+
+/* Active page — filled soft-purple pill. */
+.nav-pill.active {
+  background: rgba(155, 143, 196, 0.16);
+  color: var(--wish);
+  font-weight: 600;
+}
+.nav-pill.active:hover {
+  background: rgba(155, 143, 196, 0.22);
+}
+
+/* Sign in / Me — white outline pill. */
+.nav-pill.outline {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--ink);
+}
+.nav-pill.outline:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(180, 170, 210, 0.6);
+}
+
+/* Language toggle — ghost pill, same footprint. */
+.nav-pill.ghost {
+  color: var(--text);
+}
+
+/* Wish Gallery has a full + short label; short one hides on wide screens. */
+.nav-label-short { display: none; }
+
+/* ≤820px: drop the subtitle, keep the wordmark + dot. */
+@media (max-width: 820px) {
+  .nav-subtitle { display: none; }
+}
+
+/* ≤560px: tighten paddings/gaps, shrink pills, swap in the short label. */
+@media (max-width: 560px) {
+  .nav-inner { padding: 8px 12px; gap: 8px; }
+  .nav-brand { gap: 8px; }
+  .nav-wordmark { font-size: 15px; }
+  .nav-actions,
+  .nav-links { gap: 6px; }
+  .nav-pill {
+    height: 32px;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+  .nav-label-full { display: none; }
+  .nav-label-short { display: inline; }
+}
+

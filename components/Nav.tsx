@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { usePathname } from 'next/navigation';
-import LanguageToggle from './LanguageToggle';
 import { useLanguage } from './LanguageProvider';
 import { t } from '../lib/i18n';
 import { supabase } from '../lib/supabase/client';
 import { syncAllData } from '../lib/syncData';
 
 export default function Nav() {
-  const { lang } = useLanguage();
+  const { lang, setLang } = useLanguage();
   const pathname = usePathname();
   const [signedIn, setSignedIn] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -58,78 +57,55 @@ export default function Nav() {
     setShowUserMenu(false);
   }
 
+  // Nav destinations. Wish Gallery carries a short label for ≤560px so the
+  // whole row still fits at 375px (CSS swaps full ⇄ short via .nav-label-*).
+  const links: { href: string; label: string; short?: string }[] = [
+    { href: '/try', label: t('nav_create', lang) },
+    { href: '/daily', label: t('nav_daily', lang) },
+    { href: '/wishes', label: t('nav_wishes', lang), short: lang === 'zh' ? '画廊' : 'Gallery' },
+  ];
+
   return (
-    <div className="card" style={{ position: 'sticky', top: 0, zIndex: 10, borderRadius: 0, boxShadow: 'none', borderBottom: '1px solid var(--border)' }}>
-      <div
-        className="container"
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px' }}
-      >
-        <Link href="/" style={{ display: 'flex', gap: 12, alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-          <div style={{ width: 10, height: 10, borderRadius: 999, background: 'var(--wish)' }} />
-          <div>
-            <div style={{ fontWeight: 700 }}>{lang === 'zh' ? 'Wishflow · 愿航' : 'Wishflow'}</div>
-            <div className="muted" style={{ fontSize: 11 }}>
+    <div className="card nav-bar">
+      <div className="container nav-inner">
+        <Link href="/" className="nav-brand">
+          <span className="nav-brand-dot" />
+          <span>
+            <span className="nav-wordmark">{lang === 'zh' ? 'Wishflow · 愿航' : 'Wishflow'}</span>
+            <span className="nav-subtitle">
               {lang === 'zh' ? '一生级愿望导航' : 'Life-long Wish Navigation'}
-            </div>
-          </div>
+            </span>
+          </span>
         </Link>
-        <div style={{ display: 'flex', gap: 18, alignItems: 'center', flexWrap: 'wrap' }}>
-          {/* Create → the generator. First item: making a wish starts here. */}
-          <Link
-            href="/try"
-            style={{
-              color: pathname === '/try' ? 'var(--wish)' : 'var(--ink)',
-              fontWeight: pathname === '/try' ? 600 : 400,
-              textDecoration: 'none',
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: pathname === '/try' ? 'rgba(155, 143, 196, 0.12)' : 'transparent',
-              transition: 'all 160ms ease',
-            }}
-          >
-            {t('nav_create', lang)}
-          </Link>
-          <Link
-            href="/daily"
-            style={{
-              color: pathname === '/daily' ? 'var(--wish)' : 'var(--ink)',
-              fontWeight: pathname === '/daily' ? 600 : 400,
-              textDecoration: 'none',
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: pathname === '/daily' ? 'rgba(155, 143, 196, 0.12)' : 'transparent',
-              transition: 'all 160ms ease',
-            }}
-          >
-            {t('nav_daily', lang)}
-          </Link>
-          {/* Wish Gallery → the collection, now home to the galaxy/river views too. */}
-          <Link
-            href="/wishes"
-            style={{
-              color: pathname === '/wishes' ? 'var(--wish)' : 'var(--ink)',
-              fontWeight: pathname === '/wishes' ? 600 : 400,
-              textDecoration: 'none',
-              padding: '6px 12px',
-              borderRadius: 10,
-              background: pathname === '/wishes' ? 'rgba(155, 143, 196, 0.12)' : 'transparent',
-              transition: 'all 160ms ease',
-            }}
-          >
-            {t('nav_wishes', lang)}
-          </Link>
-          
+        <div className="nav-actions">
+          {/* The three destinations. This track may scroll on very narrow
+              screens; auth + language toggle stay pinned and always visible. */}
+          <div className="nav-links">
+            {links.map(({ href, label, short }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`nav-pill${pathname === href ? ' active' : ''}`}
+              >
+                {short ? (
+                  <>
+                    <span className="nav-label-full">{label}</span>
+                    <span className="nav-label-short">{short}</span>
+                  </>
+                ) : (
+                  label
+                )}
+              </Link>
+            ))}
+          </div>
+
           {/* User menu - combines 我/登录/退出 */}
-          <div ref={menuRef} style={{ position: 'relative' }}>
+          <div ref={menuRef} className="nav-slot">
             {signedIn ? (
               <>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="btn"
-                  style={{
-                    padding: '6px 12px',
-                    fontSize: 14,
-                  }}
+                  className="nav-pill outline"
                 >
                   {t('nav_me', lang)}
                 </button>
@@ -181,12 +157,22 @@ export default function Nav() {
                 )}
               </>
             ) : (
-              <Link className="btn" href="/login" style={{ padding: '6px 12px', fontSize: 14 }}>
+              <Link className="nav-pill outline" href="/login">
                 {t('nav_signin', lang)}
               </Link>
             )}
           </div>
-          <LanguageToggle />
+
+          {/* Language toggle — inlined so it shares the .nav-pill footprint;
+              still just swaps zh ⇄ en like the standalone component did. */}
+          <button
+            type="button"
+            className="nav-pill ghost nav-slot"
+            onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+            aria-label="Toggle language"
+          >
+            {lang === 'en' ? '中文' : 'EN'}
+          </button>
         </div>
       </div>
     </div>
