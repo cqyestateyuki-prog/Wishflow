@@ -43,13 +43,16 @@ const html = `<!doctype html>
   section {
     min-height: 100vh; scroll-snap-align: start;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 7vh clamp(24px, 7vw, 110px); position: relative; overflow: hidden;
+    position: relative; overflow: hidden;
+    /* one centered 1060px content column — padding does the centering so
+       every child (headings, bullets, quotes) shares the same left edge */
+    padding: 7vh max(clamp(24px, 7vw, 110px), calc((100vw - 920px) / 2));
   }
   .eyebrow { font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--wish); font-weight: 600; margin-bottom: 18px; }
   h1 { font-family: var(--serif); font-size: clamp(38px, 5.6vw, 74px); line-height: 1.08; font-weight: 600; max-width: 20ch; }
   h2 { font-family: var(--serif); font-size: clamp(28px, 3.8vw, 48px); line-height: 1.15; font-weight: 600; margin-bottom: 22px; max-width: 24ch; }
   p.lead { font-size: clamp(15px, 1.4vw, 18px); color: var(--text); max-width: 62ch; }
-  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: clamp(20px, 3vw, 44px); align-items: center; margin-top: 30px; }
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: clamp(20px, 3vw, 44px); align-items: start; margin-top: 30px; }
   .art .sheet { background: #fff; border: 1.5px solid rgba(145,127,185,0.5); border-radius: 22px; padding: clamp(10px, 1.6vw, 22px); box-shadow: 0 1px 2px rgba(46,43,51,.07), 0 8px 20px rgba(46,43,51,.07); }
   .art figcaption { font-size: 12.5px; color: var(--text); margin-top: 10px; text-align: center; }
   .art.big .sheet { padding: clamp(16px, 2.4vw, 34px); }
