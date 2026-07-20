@@ -1,0 +1,136 @@
+/**
+ * ContextualHint styles — one cute handwritten paper speech bubble.
+ * Reuses the app's hand-drawn language: paper fill + a wobbly purple outline
+ * carried on a background-only layer via the global #wf-squiggle-soft filter
+ * (same technique as WishCard), so the text itself stays crisp and readable.
+ */
+
+/* Overlay never traps: it lets clicks pass straight through to the page.
+   Sits below the WishDetail modal (z 1000) but above nav (z 10). */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* A whisper of warm paper tint — a soft focusing veil, never a dark gauntlet. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(250, 249, 247, 0.42);
+  pointer-events: none;
+}
+
+.bubble {
+  position: fixed;
+  width: min(320px, calc(100vw - 32px));
+  padding: 16px 18px 13px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: var(--shadow-lift);
+  pointer-events: auto;
+  transform-origin: center center;
+}
+
+/* Wobbly hand-drawn purple outline on a background-only layer, so the wobble
+   never touches the text. */
+.bubble::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1.7px solid rgba(145, 127, 185, 0.6);
+  border-radius: 22px;
+  filter: url(#wf-squiggle-soft);
+  pointer-events: none;
+}
+
+/* Low-stimulation entrance: opacity only (no motion, no bounce). Under
+   prefers-reduced-motion the .enter class is omitted and the global
+   reduced-motion rule flattens it anyway. */
+@keyframes bubbleIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.enter {
+  animation: bubbleIn 220ms ease both;
+}
+
+/* Tail — a small paper diamond beak whose free corner points at the target. */
+.tail {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  margin-left: -7px;
+  background: rgba(255, 255, 255, 0.95);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.tailUp {
+  top: -8px;
+  border-top: 1.7px solid rgba(145, 127, 185, 0.6);
+  border-left: 1.7px solid rgba(145, 127, 185, 0.6);
+}
+
+.tailDown {
+  bottom: -8px;
+  border-bottom: 1.7px solid rgba(145, 127, 185, 0.6);
+  border-right: 1.7px solid rgba(145, 127, 185, 0.6);
+}
+
+.text {
+  position: relative;
+  margin: 0 0 12px;
+  font-family: var(--font-serif), ui-serif, serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 0.2px;
+  color: var(--ink);
+}
+
+.footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* "Skip tips" stays quiet and muted — present but never shouting. */
+.skipAll {
+  padding: 6px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.7;
+  cursor: pointer;
+  transition: opacity 160ms ease, background 160ms ease;
+}
+
+.skipAll:hover {
+  opacity: 1;
+  background: rgba(230, 225, 240, 0.35);
+}
+
+/* "Got it" rides the global .btn.solid purple pill; keep it compact. */
+.gotIt {
+  padding: 8px 16px;
+  font-size: 13.5px;
+  border-radius: 12px;
+}
+
+@media (max-width: 560px) {
+  .bubble {
+    width: calc(100vw - 32px);
+  }
+}

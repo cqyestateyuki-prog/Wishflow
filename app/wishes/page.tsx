@@ -10,6 +10,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import LoginPrompt from '@/components/LoginPrompt';
 import WishCard from '@/components/WishCard';
+import ContextualHint from '@/components/Onboarding/ContextualHint';
 import WishNote from '@/components/WishCard/WishNote';
 import WishDetail from '@/components/WishCard/WishDetail';
 import { StarMap, RiverMap } from '@/components/WishMap';
@@ -264,7 +265,7 @@ export default function WishesPage() {
 
         {/* View toggle — read the same wishes as a pinned board, a galaxy,
             or a river. Styled to match the selects in this row. */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div data-onboard="views" style={{ display: 'flex', gap: 6 }}>
           {([
             { mode: 'board', label: language === 'zh' ? '画板' : 'Board', icon: null },
             { mode: 'galaxy', label: language === 'zh' ? '星系' : 'Galaxy', icon: <StarIcon size={13} /> },
@@ -433,6 +434,16 @@ export default function WishesPage() {
           onWishChange={reload}
         />
       )}
+
+      {/* First-visit hint — points at the Board / Galaxy / River pills. */}
+      <ContextualHint
+        hintId="gallery"
+        target="views"
+        place="below"
+        rot={1}
+        zh="同一批愿望，三种看法：便签墙、星图、河流。没有打卡，没有进度条。"
+        en="Same wishes, three ways to look — board, galaxy, river. No streaks, no progress bars."
+      />
     </PageShell>
   );
 }

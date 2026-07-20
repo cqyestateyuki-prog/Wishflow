@@ -8,6 +8,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { WOBBLY_FRAME } from '@/components/wobblyFrame';
+import ContextualHint from '@/components/Onboarding/ContextualHint';
 import { useLanguage } from '@/components/LanguageProvider';
 import { logger } from '@/lib/logger';
 import { MoonNew, MoonCrescent, MoonFull } from '@/components/Icons';
@@ -386,8 +387,9 @@ export default function TryPage() {
               </div>
             </div>
 
-            <button 
-              className="btn dark" 
+            <button
+              data-onboard="create"
+              className="btn dark"
               onClick={handleGenerate}
               disabled={!description.trim() || description.trim().length < 5}
               style={{ 
@@ -694,6 +696,16 @@ export default function TryPage() {
           </div>
         </div>
       )}
+
+      {/* First-visit hint — points at the Generate button on the input step. */}
+      <ContextualHint
+        hintId="create"
+        target="create"
+        place="below"
+        rot={-1.2}
+        zh="先写一句愿望，我来把它画出来 ✦"
+        en="Write a wish in one sentence — I'll draw it for you."
+      />
     </div>
   );
 }

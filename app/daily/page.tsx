@@ -10,6 +10,7 @@ import Link from 'next/link';
 import PageShell from '@/components/PageShell';
 import LoginPrompt from '@/components/LoginPrompt';
 import WishCard from '@/components/WishCard';
+import ContextualHint from '@/components/Onboarding/ContextualHint';
 import WishDetail from '@/components/WishCard/WishDetail';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLocalConnections } from '@/hooks/useLocalConnections';
@@ -120,8 +121,9 @@ export default function DailyPage() {
         </div>
 
         {/* Mock Energy State Selection - clickable to show login prompt */}
-        <div 
-          className="card" 
+        <div
+          data-onboard="today"
+          className="card"
           style={{ padding: 20, marginBottom: 20, opacity: 0.75, cursor: 'pointer' }}
           onClick={() => setShowLoginPrompt(true)}
         >
@@ -280,6 +282,17 @@ export default function DailyPage() {
             </div>
           </div>
         )}
+
+        {/* First-visit hint — points at the energy-state card that drives
+            the daily connection flow. */}
+        <ContextualHint
+          hintId="today"
+          target="today"
+          place="below"
+          rot={-1}
+          zh="两分钟就算数。状态差的日子，看一眼也是前进。"
+          en="Two minutes counts. On a low day, just looking is progress."
+        />
       </PageShell>
     );
   }
@@ -312,7 +325,7 @@ export default function DailyPage() {
       </div>
 
       {/* Energy State Selection */}
-      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+      <div data-onboard="today" className="card" style={{ padding: 20, marginBottom: 20 }}>
         <h3 style={{ margin: '0 0 12px', fontSize: 15 }}>
           {language === 'zh' ? '今天的你，状态如何？' : 'How are you feeling today?'}
         </h3>
@@ -477,6 +490,17 @@ export default function DailyPage() {
           onWishChange={reload}
         />
       )}
+
+      {/* First-visit hint — points at the energy-state card that drives the
+          daily connection flow. */}
+      <ContextualHint
+        hintId="today"
+        target="today"
+        place="below"
+        rot={-1}
+        zh="两分钟就算数。状态差的日子，看一眼也是前进。"
+        en="Two minutes counts. On a low day, just looking is progress."
+      />
     </PageShell>
   );
 }
