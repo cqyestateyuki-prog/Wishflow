@@ -75,45 +75,43 @@ function CraneGlyph({ level }: { level: string | null }) {
   const stroke = deep ? '#4A3D70' : mid ? '#5B4B84' : '#8B7BB0';
   const sw = deep ? 1.35 : mid ? 1.2 : 1.05;
   // Cranes are small paper cards, not dots — the river carries them, not pins them
-  const s = (deep ? 1.16 : mid ? 1 : 0.88) * 2.2;
+  const s = (deep ? 1.16 : mid ? 1 : 0.88) * 2.0;
   return (
     <g transform={`scale(${s})`}>
-      {deep && <ellipse cx="0" cy="4" rx="22" ry="10" fill="url(#rm-lantern)" />}
+      {deep && <ellipse cx="1" cy="4" rx="16" ry="7" fill="url(#rm-lantern)" />}
       {/* curved ripple reflection on the water — two gentle arcs, not underlines */}
       <path
-        d="M -12 13 Q -6 15.5 0 13"
-        fill="none" stroke={stroke} strokeWidth={1.1} opacity={0.35} strokeLinecap="round"
+        d="M -12 12 Q -6 14.5 0 12"
+        fill="none" stroke={stroke} strokeWidth={1} opacity={0.32} strokeLinecap="round"
       />
       <path
-        d="M 4 15 Q 10 17.5 16 15"
-        fill="none" stroke={stroke} strokeWidth={1.1} opacity={0.35} strokeLinecap="round"
+        d="M 4 14 Q 10 16.5 16 14"
+        fill="none" stroke={stroke} strokeWidth={1} opacity={0.32} strokeLinecap="round"
       />
-      {/* tail — a slim folded flap sweeping up-back; drawn first so the body
-          fill tucks its base cleanly under the crease line */}
+      {/* tail — a slim folded flap lifting off the stern */}
       <path
-        d="M -4 -7 L -14 -18 L -9 -7"
+        d="M -3 -6 L -14 -13 L -7 -5 Z"
         fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
       />
-      {/* body — the folded diamond sitting on the waterline (touches at ±) */}
+      {/* far wing — the second wing tip rising behind and left, giving real depth */}
       <path
-        d="M -12 0 L -4 -7 L 10 -7 L 16 0 Z"
+        d="M -7 -6 L -2 -19 L 3 -7 Z"
+        fill="#FBFAFE" stroke={stroke} strokeWidth={sw * 0.85} strokeLinejoin="round" strokeLinecap="round" opacity={0.7}
+      />
+      {/* body — the small folded hull resting on the waterline */}
+      <path
+        d="M -11 0 L -3 -6 L 9 -6 L 14 0 Z"
         fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
       />
-      {/* wing — the tall proud triangle rising from the body's center (open
-          base: no doubled line across the body top) */}
+      {/* near wing — the tall proud sail rising from the body's center */}
       <path
-        d="M -2 -7 L 2 -27 L 8 -7"
+        d="M -2 -6 L 4 -25 L 11 -6 Z"
         fill="#FFFFFF" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
       />
-      {/* slender neck rising forward to the folded head, with a tiny beak tick */}
+      {/* neck + folded head with a small hooked beak — one continuous fold */}
       <path
-        d="M 10 -7 L 18 -20 L 19 -14 M 18 -20 L 22 -21"
+        d="M 9 -6 L 20 -16 L 23.5 -18 L 20.5 -13.5"
         fill="none" stroke={stroke} strokeWidth={sw} strokeLinejoin="round" strokeLinecap="round"
-      />
-      {/* interior fold crease across the body — the line that sells the paper */}
-      <path
-        d="M -4 -7 L 6 0"
-        fill="none" stroke="#8B7BB0" strokeWidth={sw * 0.8} opacity={0.5} strokeLinecap="round"
       />
     </g>
   );
@@ -233,9 +231,9 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
             </linearGradient>
             {/* The lantern light a deeply-connected boat carries on the water */}
             <radialGradient id="rm-lantern">
-              <stop offset="0%" stopColor="rgba(155, 143, 196, 0.4)" />
-              <stop offset="70%" stopColor="rgba(155, 143, 196, 0.14)" />
-              <stop offset="100%" stopColor="rgba(155, 143, 196, 0)" />
+              <stop offset="0%" stopColor="rgba(180, 164, 216, 0.3)" />
+              <stop offset="60%" stopColor="rgba(180, 164, 216, 0.09)" />
+              <stop offset="100%" stopColor="rgba(180, 164, 216, 0)" />
             </radialGradient>
           </defs>
 

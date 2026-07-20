@@ -255,9 +255,9 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
           <defs>
             {/* The galaxy's soft heart — one same-family radial, whisper-low */}
             <radialGradient id="sm-corehaze">
-              <stop offset="0%" stopColor="rgba(155, 143, 196, 0.2)" />
-              <stop offset="60%" stopColor="rgba(155, 143, 196, 0.08)" />
-              <stop offset="100%" stopColor="rgba(155, 143, 196, 0)" />
+              <stop offset="0%" stopColor="rgba(145, 127, 185, 0.22)" />
+              <stop offset="50%" stopColor="rgba(145, 127, 185, 0.05)" />
+              <stop offset="100%" stopColor="rgba(145, 127, 185, 0)" />
             </radialGradient>
             {/* Negative-space halo:每颗星周围挖掉轨道与尘埃,星坐在一小片
                 干净留白里,自己就亮(古典星图的纸媒之光) */}
@@ -313,8 +313,8 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
               className={styles.coreHaze}
               cx={CENTER_X}
               cy={CENTER_Y}
-              rx={120}
-              ry={120 * RY_FACTOR}
+              rx={82}
+              ry={82 * RY_FACTOR}
               fill="url(#sm-corehaze)"
               aria-hidden="true"
             />
