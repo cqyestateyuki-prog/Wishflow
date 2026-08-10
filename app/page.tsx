@@ -27,6 +27,25 @@ const INK = '#2E2B33';
 // Deeper than the app tokens on purpose — pale purple lines washed out on the
 // big empty sheet of this page (user feedback 2026-07-10).
 const WISH = '#5B4B84';
+
+// Hero 两颗 CTA 的公共骨架 —— flex:1 让它们在同一条容器里均分宽度,
+// 高度锁死 50, 次要按钮那 1px 边框用透明边框在主按钮上补齐, 两颗才真的一样大。
+const ctaBase: React.CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  height: 50,
+  borderRadius: 999,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '0 14px',
+  fontSize: 15,
+  lineHeight: 1.2,
+  textAlign: 'center',
+  fontFamily: 'inherit',
+  textDecoration: 'none',
+  border: '1px solid transparent',
+};
 const SOFT = '#9C8CC2';
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -673,6 +692,14 @@ export default function HomePage() {
           textAlign: isMobile ? 'center' : 'left',
           padding: isMobile ? '0 24px 18vh' : '0 24px 0 clamp(60px, 15vw, 300px)',
         }}>
+          {/* 手机端文案区托底: 拱门插画居中, 而文案块贴底占了大半屏, 英文字更长直接压在画上。
+              铺一层从透明到纸色的渐变, 插画仍在下面若隐若现, 字始终落在纸上。 */}
+          {isMobile && (
+            <div aria-hidden="true" style={{
+              position: 'absolute', left: 0, right: 0, bottom: 0, height: '64%', zIndex: -1, pointerEvents: 'none',
+              background: 'linear-gradient(180deg, rgba(250,249,247,0) 0%, rgba(250,249,247,0.72) 22%, rgba(250,249,247,0.94) 46%, rgba(250,249,247,0.98) 100%)',
+            }} />
+          )}
           <p style={{ ...fade('0.2s'), fontSize: 12, letterSpacing: zh ? '0.3em' : '0.18em', textTransform: 'uppercase', color: 'var(--wish)', fontWeight: 600, marginBottom: 18 }}>
             {zh ? '愿航 · 一生级愿望导航' : 'Wishflow · Life-long Wish Navigation'}
           </p>
@@ -682,14 +709,16 @@ export default function HomePage() {
           <p style={{ ...fade('0.45s'), color: 'var(--text)', maxWidth: isMobile ? 400 : 400, lineHeight: 1.8, margin: '22px 0 34px' }}>
             {zh ? '从此刻的心愿到一生的蓝图——梦的每个阶段，都被温柔保管。' : 'From your present wishes to your life-long blueprints — every stage of your dreams is gently preserved.'}
           </p>
-          <div style={{ ...fade('0.55s'), display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: isMobile ? 'center' : 'flex-start' }}>
-            <Link href="/try" style={{ background: 'var(--wish)', color: '#fff', borderRadius: 999, padding: '13px 28px', textDecoration: 'none', boxShadow: 'var(--shadow-lift, 0 10px 30px rgba(107,92,142,0.18))' }}>
+          {/* 两颗 CTA 等宽等高: flex:1 均分同一条容器, 高度锁 50 ——
+              原本一个 padding 13/28、一个 13/24, 文案长短又不同, 手机上一长一短很难看 */}
+          <div style={{ ...fade('0.55s'), display: 'flex', gap: 12,
+            width: isMobile ? '100%' : 'min(100%, 480px)', maxWidth: 480 }}>
+            <Link href="/try" style={{ ...ctaBase, background: 'var(--wish)', color: '#fff',
+              boxShadow: 'var(--shadow-lift, 0 10px 30px rgba(107,92,142,0.18))' }}>
               {zh ? '生成我的第一张愿望图' : 'Generate my first wish map'}
             </Link>
-            <button
-              onClick={playTour}
-              style={{ background: 'rgba(255,255,255,0.85)', color: 'var(--ink)', border: '1px solid var(--border)', borderRadius: 999, padding: '13px 24px', fontSize: 16, fontFamily: 'inherit', cursor: 'pointer' }}
-            >
+            <button onClick={playTour} style={{ ...ctaBase, background: 'rgba(255,255,255,0.85)',
+              color: 'var(--ink)', border: '1px solid var(--border)', cursor: 'pointer' }}>
               {zh ? '看看它如何运作' : 'See how it works'}
             </button>
           </div>
