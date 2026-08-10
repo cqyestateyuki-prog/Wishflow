@@ -6,3 +6,6 @@ out
 .vercel
 .vercel
 tsconfig.tsbuildinfo
+
+# UI Kit 截图产出(压缩后进 public/ui-kit/shots)
+scripts/ui-kit/out/
