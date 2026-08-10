@@ -14,7 +14,7 @@ import ContextualHint from '@/components/Onboarding/ContextualHint';
 import WishNote from '@/components/WishCard/WishNote';
 import WishDetail from '@/components/WishCard/WishDetail';
 import { StarMap, RiverMap } from '@/components/WishMap';
-import { StarIcon, WaveIcon } from '@/components/Icons';
+import { StarIcon, WaveIcon, BoardIcon } from '@/components/Icons';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLanguage } from '@/components/LanguageProvider';
 import { LocalWish, clearSampleData } from '@/lib/localStore';
@@ -267,7 +267,7 @@ export default function WishesPage() {
             or a river. Styled to match the selects in this row. */}
         <div data-onboard="views" style={{ display: 'flex', gap: 6 }}>
           {([
-            { mode: 'board', label: language === 'zh' ? '画板' : 'Board', icon: null },
+            { mode: 'board', label: language === 'zh' ? '画板' : 'Board', icon: <BoardIcon size={13} /> },
             { mode: 'galaxy', label: language === 'zh' ? '星系' : 'Galaxy', icon: <StarIcon size={13} /> },
             { mode: 'river', label: language === 'zh' ? '河流' : 'River', icon: <WaveIcon size={13} /> },
           ] as const).map(({ mode, label, icon }) => {
@@ -276,6 +276,9 @@ export default function WishesPage() {
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
+                aria-label={label}
+                title={label}
+                aria-pressed={active}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -292,7 +295,8 @@ export default function WishesPage() {
                 }}
               >
                 {icon}
-                {label}
+                {/* 窄屏只留图标: 三个按钮的文字会把工具条挤成三行(用户打回) */}
+                <span className="view-toggle-label">{label}</span>
               </button>
             );
           })}

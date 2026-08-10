@@ -185,6 +185,15 @@ export const StarIcon = ({ size = 16, className, style }: IconProps) => (
   </svg>
 );
 
+export const BoardIcon = ({ size = 16, className, style }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" />
+    <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" />
+    <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" />
+    <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" />
+  </svg>
+);
+
 export const WaveIcon = ({ size = 16, className, style }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
     <path d="M2 12c.5-1.5 2-3 4-3s3.5 1.5 4 3 2 3 4 3 3.5-1.5 4-3 2-3 4-3" />

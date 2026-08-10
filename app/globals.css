@@ -771,3 +771,11 @@ main {
     justify-content: center;
   }
 }
+
+/* ── 愿望库工具条 (2026-08-10) ──────────────────────────
+   Board / Galaxy / River 三个按钮带文字时, 390 宽下会把
+   搜索 + 领域 + 排序 + 视图挤成三行(英文尤其明显, 中文两行)。
+   窄屏只留图标, 文字走 aria-label / title 兜住可达性。 */
+@media (max-width: 700px) {
+  .view-toggle-label { display: none; }
+}
