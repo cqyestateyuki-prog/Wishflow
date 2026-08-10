@@ -734,3 +734,40 @@ main {
   .nav-label-short { display: inline; }
 }
 
+
+/* ── /try 的环境装饰层 (2026-08-09) ──────────────────────────
+   原本是内联 inset:-24px -10vw 0 —— 左右各出血 10vw, 父容器没裁,
+   390 宽下页面横向多出 39px(scrollWidth 429)。桌面保留出血, 窄屏收回来。 */
+.ambient-scenery {
+  position: absolute;
+  inset: -24px -10vw 0;
+  pointer-events: none;
+  z-index: 0;
+}
+@media (max-width: 700px) {
+  .ambient-scenery { inset: -24px 0 0; }
+}
+
+/* ── 移动端触摸目标 (2026-08-09) ──────────────────────────
+   390 宽下实测 36 类可点元素高度在 15–38px 之间(导航整排 32px,
+   /try 的选项 38px, 愿望库那条「Sign in →」只有 15px)。
+   Apple HIG 与 Material 都要求 44pt。
+   ★只在粗指针设备生效, 桌面鼠标精度够不必撑松界面。
+   ★只给 min-height 不给 min-width —— /try 那排 Short-term/Weeks 选项
+     强行加宽会换行撑破; 正文行内 <a> 天然不受影响。 */
+@media (pointer: coarse) {
+  button,
+  summary,
+  select,
+  [role="button"],
+  a[href],
+  input:not([type="hidden"]) {
+    min-height: 44px;
+  }
+  button:not(.tap-keep),
+  [role="button"]:not(.tap-keep) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

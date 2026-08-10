@@ -210,7 +210,7 @@ export default function TryPage() {
     <div className="container" style={{ paddingTop: 48, maxWidth: 920, position: 'relative' }}>
       {/* Ambient scenery — a swirl-drawn sun, a drifting cloud, and a river
           flowing along the bottom of the page. Pure decoration, zero pointer. */}
-      <div aria-hidden="true" style={{ position: 'absolute', inset: '-24px -10vw 0', pointerEvents: 'none', zIndex: 0 }}>
+      <div aria-hidden="true" className="ambient-scenery">
         {/* swirl sun (虎皮卷纹理 — light travels round the spiral) */}
         <svg viewBox="0 0 200 200" style={{ position: 'absolute', top: 10, right: '4%', width: 'clamp(110px, 14vw, 185px)' }}>
           <g fill="none" stroke="#B5A8D0" strokeLinecap="round">
