@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { LocalWish } from '@/lib/localStore';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useSettings } from '@/hooks/useSettings';
@@ -21,6 +21,19 @@ type StarMapProps = {
   onWishSelect?: (wish: LocalWish) => void;
   onWishClick?: (wish: LocalWish) => void;
 };
+
+// 窄屏(手机)标记 —— viewBox 改不了 CSS, 得在组件里判断
+function useNarrow(bp = 700) {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${bp}px)`);
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [bp]);
+  return narrow;
+}
 
 const WIDTH = 960;
 const HEIGHT = 780;
@@ -171,6 +184,7 @@ function makeWobblyLink(toX: number, toY: number): string {
 export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishClick }: StarMapProps) {
   const { language } = useLanguage();
   const { settings } = useSettings();
+  const narrow = useNarrow();
   const [tooltipWish, setTooltipWish] = useState<LocalWish | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
@@ -243,9 +257,12 @@ export default function StarMap({ wishes, selectedWishId, onWishSelect, onWishCl
 
       <div style={{ position: 'relative' }}>
         <svg
-          viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+          /* 窄屏: 把 viewBox 收到内容的实际范围(星系半径最大 350, 中心 480/380),
+             960x780 里四周那圈空白在 390 宽下白白吃掉三成尺寸 —— 收紧后同样的
+             画面放大约 30%, 并用 aspectRatio 顶掉 CSS 里那个会留黑边的固定 450px 高 */
+          viewBox={narrow ? '108 56 744 648' : `0 0 ${WIDTH} ${HEIGHT}`}
           className={styles.svgCanvas}
-          style={{ height: HEIGHT }}
+          style={narrow ? { height: 'auto', aspectRatio: '744 / 648' } : { height: HEIGHT }}
           role="img"
           aria-label={language === 'zh' ? '愿力地图（星图）' : 'Wish Map (Star)'}
         >

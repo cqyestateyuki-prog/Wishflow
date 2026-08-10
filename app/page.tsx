@@ -697,7 +697,9 @@ export default function HomePage() {
           {isMobile && (
             <div aria-hidden="true" style={{
               position: 'absolute', left: 0, right: 0, bottom: 0, height: '64%', zIndex: -1, pointerEvents: 'none',
-              background: 'linear-gradient(180deg, rgba(250,249,247,0) 0%, rgba(250,249,247,0.72) 22%, rgba(250,249,247,0.94) 46%, rgba(250,249,247,0.98) 100%)',
+              // 两头都收: 只在标题/正文那一段托底, 底部重新放开 ——
+              // 一路盖到底会把河流虚线一起抹掉(用户: 河流线条没有了不好看)
+              background: 'linear-gradient(180deg, rgba(250,249,247,0) 0%, rgba(250,249,247,0.70) 20%, rgba(250,249,247,0.93) 38%, rgba(250,249,247,0.93) 60%, rgba(250,249,247,0.45) 80%, rgba(250,249,247,0) 100%)',
             }} />
           )}
           <p style={{ ...fade('0.2s'), fontSize: 12, letterSpacing: zh ? '0.3em' : '0.18em', textTransform: 'uppercase', color: 'var(--wish)', fontWeight: 600, marginBottom: 18 }}>

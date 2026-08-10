@@ -10,7 +10,7 @@
 
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { LocalWish } from '@/lib/localStore';
 import { useLanguage } from '@/components/LanguageProvider';
 import { useSettings } from '@/hooks/useSettings';
@@ -24,6 +24,19 @@ type RiverMapProps = {
   onWishSelect?: (wish: LocalWish) => void;
   onWishClick?: (wish: LocalWish) => void;
 };
+
+// 窄屏(手机)标记 —— viewBox 改不了 CSS, 得在组件里判断
+function useNarrow(bp = 700) {
+  const [narrow, setNarrow] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${bp}px)`);
+    const on = () => setNarrow(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [bp]);
+  return narrow;
+}
 
 const WIDTH = 960;
 const CANVAS_HEIGHT = 620;
@@ -120,6 +133,7 @@ function CraneGlyph({ level }: { level: string | null }) {
 export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishClick }: RiverMapProps) {
   const { language } = useLanguage();
   const { settings } = useSettings();
+  const narrow = useNarrow();
   const [tooltipWish, setTooltipWish] = useState<LocalWish | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
@@ -215,9 +229,11 @@ export default function RiverMap({ wishes, selectedWishId, onWishSelect, onWishC
 
       <div style={{ position: 'relative' }}>
         <svg
+          /* 河流是横向时间轴, 不能像星图那样横向裁 —— 只把固定 450px 高换成
+             按比例的 aspectRatio, 否则 390 宽下画面只占中间一条, 上下全是死白 */
           viewBox={`0 0 ${WIDTH} ${CANVAS_HEIGHT}`}
           className={styles.svgCanvas}
-          style={{ height: CANVAS_HEIGHT }}
+          style={narrow ? { height: 'auto', aspectRatio: `${WIDTH} / ${CANVAS_HEIGHT}` } : { height: CANVAS_HEIGHT }}
           role="img"
           aria-label={language === 'zh' ? '愿力地图（河流）' : 'Wish Map (River)'}
         >

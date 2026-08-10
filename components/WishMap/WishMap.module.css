@@ -773,3 +773,12 @@
 .noAnimation * {
   animation: none !important;
 }
+
+/* ── 窄屏地图标签放大 (2026-08-10) ──────────────────────────
+   SVG 缩到 390 宽后, 15px 的节点标签只剩 6px 视觉大小, 还互相压。
+   这些是 SVG user unit, 跟着画布一起缩, 所以直接调大即可。 */
+@media (max-width: 700px) {
+  .nodeLabel { font-size: 22px; stroke-width: 5px; }
+  .ringLabel { font-size: 19px; letter-spacing: 1px; }
+  .coreText  { font-size: 26px; }
+}
