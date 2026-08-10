@@ -595,11 +595,11 @@ export default function HomePage() {
     return (
       <div style={{ padding: '10vh 24px' }}>
         <section style={{ maxWidth: 720, margin: '0 auto 12vh', textAlign: 'center' }}>
-          <h1 style={{ fontFamily: serif, fontSize: 'clamp(40px, 6vw, 68px)', color: 'var(--ink)', lineHeight: 1.1 }}>{zh ? '让愿望，慢慢成形。' : 'Let wishes slowly take shape.'}</h1>
+          <h1 style={{ fontFamily: serif, fontSize: 'clamp(40px, 6vw, 68px)', color: 'var(--ink)', lineHeight: 1.1 }}>{zh ? (<>让愿望，<span style={{ whiteSpace: 'nowrap' }}>慢慢成形。</span></>) : 'Let wishes slowly take shape.'}</h1>
           <p style={{ color: 'var(--text)', maxWidth: 460, margin: '20px auto 32px', lineHeight: 1.8 }}>
             {zh ? '一个温柔的愿望导航系统。把愿望留在这里——它会陪你等过每一个季节。' : 'A gentle wish navigation system. Leave your wish here — it will wait for you through every season.'}
           </p>
-          <Link href="/try" style={{ background: 'var(--wish)', color: '#fff', borderRadius: 999, padding: '12px 26px', textDecoration: 'none' }}>{zh ? '生成我的第一张愿望图' : 'Generate my first wish map'}</Link>
+          <Link href="/try" style={{ background: 'var(--wish)', color: '#fff', borderRadius: 999, padding: '12px 26px', textDecoration: 'none' }}>{zh ? '生成我的第一张愿望图' : 'Generate my wish map'}</Link>
         </section>
         <section style={{ maxWidth: 980, margin: '0 auto' }}>
           <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 4vw, 44px)', color: 'var(--ink)', textAlign: 'center', marginBottom: 32 }}>{zh ? '你的愿望住在这里。' : 'Your wishes live here.'}</h2>
@@ -706,7 +706,7 @@ export default function HomePage() {
             {zh ? '愿航 · 一生级愿望导航' : 'Wishflow · Life-long Wish Navigation'}
           </p>
           <h1 style={{ ...fade('0.3s'), fontFamily: serif, fontSize: isMobile ? 'clamp(34px, 9vw, 44px)' : 'clamp(38px, 4.6vw, 62px)', color: 'var(--ink)', lineHeight: zh ? 1.25 : 1.08, margin: 0, maxWidth: isMobile ? 420 : 520 }}>
-            {zh ? '让愿望，慢慢成形。' : 'Let wishes slowly take shape.'}
+            {zh ? (<>让愿望，<span style={{ whiteSpace: 'nowrap' }}>慢慢成形。</span></>) : 'Let wishes slowly take shape.'}
           </h1>
           <p style={{ ...fade('0.45s'), color: 'var(--text)', maxWidth: isMobile ? 400 : 400, lineHeight: 1.8, margin: '22px 0 34px' }}>
             {zh ? '从此刻的心愿到一生的蓝图——梦的每个阶段，都被温柔保管。' : 'From your present wishes to your life-long blueprints — every stage of your dreams is gently preserved.'}
@@ -717,7 +717,7 @@ export default function HomePage() {
             width: isMobile ? '100%' : 'min(100%, 480px)', maxWidth: 480 }}>
             <Link href="/try" style={{ ...ctaBase, background: 'var(--wish)', color: '#fff',
               boxShadow: 'var(--shadow-lift, 0 10px 30px rgba(107,92,142,0.18))' }}>
-              {zh ? '生成我的第一张愿望图' : 'Generate my first wish map'}
+              {zh ? '生成我的第一张愿望图' : 'Generate my wish map'}
             </Link>
             <button onClick={playTour} style={{ ...ctaBase, background: 'rgba(255,255,255,0.85)',
               color: 'var(--ink)', border: '1px solid var(--border)', cursor: 'pointer' }}>
