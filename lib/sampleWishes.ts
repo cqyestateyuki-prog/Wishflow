@@ -1,0 +1,121 @@
+// AUTO-GENERATED sample wishes (bilingual demo content for the empty Wish Gallery).
+// Source: scripts/ui-kit/wishes-en.json + wishes-zh.json. Display-only — never persisted.
+// To regenerate: node scripts/gen-samples.mjs (kept in repo docs).
+import type { LocalWish } from './localStore';
+import type { WishMood, WishDomain } from './types';
+
+type SampleSeed = {
+  id: string;
+  titleEn: string; titleZh: string;
+  descEn: string; descZh: string;
+  domain: WishDomain; mood: WishMood; svg_pattern: string;
+  time_scope: 'short' | 'long'; target_time: 'weeks' | 'months' | 'years';
+  keywords: string[]; created_at: string; svg_data: string;
+};
+
+const SAMPLES: SampleSeed[] = [
+  {
+    "id": "sample_1",
+    "titleEn": "A Scenic Journey With My Parents",
+    "titleZh": "带爸妈坐慢火车跨越山海，共赴一场温情旅程",
+    "descEn": "I want to take my parents on a slow train trip across the country, and see the sea with them.",
+    "descZh": "带爸妈坐一次慢火车穿过大半个中国，陪他们看一次海。",
+    "domain": "家人",
+    "mood": "温暖",
+    "svg_pattern": "家人",
+    "time_scope": "long",
+    "target_time": "years",
+    "keywords": [
+      "train",
+      "ocean",
+      "landscape"
+    ],
+    "created_at": "2026-08-09T23:14:28.476Z",
+    "svg_data": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <style>\n    @keyframes wave { from { transform: translateX(0); } to { transform: translateX(-32px); } }\n    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }\n  </style>\n  <g stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\">\n    <!-- Far Background -->\n    <path d=\"M50 120 Q 150 80 250 120 T 400 110\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" opacity=\"0.7\"/>\n    <circle cx=\"320\" cy=\"60\" r=\"15\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" opacity=\"0.6\"/>\n    \n    <!-- Midground: Train (Hero) -->\n    <g stroke=\"#6B5C8E\" stroke-width=\"1.8\">\n      <rect x=\"120\" y=\"125\" width=\"160\" height=\"40\" rx=\"5\"/>\n      <path d=\"M135 125 v-20 h100 v20\" />\n      <circle cx=\"145\" cy=\"135\" r=\"8\"/>\n      <circle cx=\"185\" cy=\"135\" r=\"8\"/>\n      <circle cx=\"225\" cy=\"135\" r=\"8\"/>\n      <circle cx=\"265\" cy=\"135\" r=\"8\"/>\n      <path d=\"M280 145 l20 0\" class=\"smoke\" style=\"animation: float 5s ease-in-out infinite\" />\n    </g>\n\n    <!-- Foreground: The Sea and Figures -->\n    <g stroke=\"#2E2B33\" stroke-width=\"2.6\">\n      <!-- Ground line -->\n      <path d=\"M0 180 h400\" />\n      <!-- Figures -->\n      <path d=\"M150 180 c5 -20 10 -20 15 0\" />\n      <circle cx=\"157\" cy=\"155\" r=\"6\" />\n      <path d=\"M170 180 c5 -25 10 -25 15 0\" />\n      <circle cx=\"177\" cy=\"150\" r=\"6\" />\n      <path d=\"M190 180 c5 -20 10 -20 15 0\" />\n      <circle cx=\"197\" cy=\"155\" r=\"6\" />\n      <!-- Waves -->\n      <path d=\"M0 195 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0\" stroke-dasharray=\"14 8\" style=\"animation: wave 5s linear infinite\" />\n    </g>\n\n    <!-- Texture -->\n    <g stroke=\"#B5A8D0\" stroke-width=\"1.3\" opacity=\"0.6\">\n      <path d=\"M125 165 h10 m10 0 h10 m10 0 h10\" />\n      <path d=\"M30 185 l5 5 M40 185 l5 5 M350 185 l5 5\" />\n    </g>\n  </g>\n</svg>"
+  },
+  {
+    "id": "sample_2",
+    "titleEn": "Launch a Product People Love",
+    "titleZh": "打造一款让用户产生深厚依赖的专属小产品",
+    "descEn": "Build and launch my own small product — something a few people truly rely on.",
+    "descZh": "做出一个属于自己的小产品，有几个人真的离不开它。",
+    "domain": "创造",
+    "mood": "激励",
+    "svg_pattern": "创造",
+    "time_scope": "long",
+    "target_time": "years",
+    "keywords": [
+      "laptop",
+      "code",
+      "users"
+    ],
+    "created_at": "2026-08-09T23:14:39.859Z",
+    "svg_data": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <style>\n    @keyframes wave { from { transform: translateX(0); } to { transform: translateX(-32px); } }\n    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }\n  </style>\n  <g stroke-linecap=\"round\" stroke-linejoin=\"round\">\n    <!-- Defining Prop: A miniature desktop workspace (The \"Product\" being built) -->\n    <!-- Hero: A small, sturdy wooden workbench with a laptop open -->\n    <path d=\"M140 160h120v-50h-120z\" stroke=\"#2E2B33\" stroke-width=\"2.6\" fill=\"none\"/>\n    <path d=\"M160 110v-30h80v30\" stroke=\"#2E2B33\" stroke-width=\"2.6\" fill=\"none\"/>\n    <path d=\"M150 80h100v-5h-100z\" stroke=\"#2E2B33\" stroke-width=\"2.6\" fill=\"none\"/>\n    \n    <!-- Defining Prop: A small \"User\" icon (The person relying on it) -->\n    <path d=\"M280 150c-5-20 5-30 10-30s15 10 10 30\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" fill=\"none\"/>\n    <circle cx=\"295\" cy=\"115\" r=\"6\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" fill=\"none\"/>\n    \n    <!-- Ground Line -->\n    <path d=\"M50 160h300\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" fill=\"none\"/>\n    \n    <!-- Background: Distant hills -->\n    <path d=\"M50 160c40-40 80-20 120-30s80-20 150-10\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" fill=\"none\"/>\n    <path d=\"M30 160c50-60 100-30 150-40s100-20 200-5\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" fill=\"none\"/>\n    \n    <!-- Motion Element 1: Floating \"Idea\" sparks -->\n    <g style=\"animation: float 5s ease-in-out infinite\">\n        <circle cx=\"200\" cy=\"60\" r=\"2\" fill=\"#2E2B33\"/>\n        <circle cx=\"210\" cy=\"50\" r=\"1.5\" fill=\"#2E2B33\"/>\n    </g>\n    \n    <!-- Motion Element 2: A soft breeze/cloud line -->\n    <path d=\"M320 70c-20-10-40 0-60-10\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" fill=\"none\" style=\"animation: float 5s ease-in-out infinite\"/>\n    \n    <!-- Texture: Ground ticks -->\n    <path d=\"M60 162v5 M100 162v3 M340 162v4\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" fill=\"none\"/>\n    \n    <!-- Shadow -->\n    <path d=\"M145 165h110\" stroke=\"#2E2B33\" stroke-width=\"1\" stroke-dasharray=\"2 4\" fill=\"none\"/>\n  </g>\n</svg>"
+  },
+  {
+    "id": "sample_3",
+    "titleEn": "Reclaiming My Body Through Swimming",
+    "titleZh": "每周两次与水相拥，找回身体的轻盈与掌控感",
+    "descEn": "Get back to swimming twice a week and feel at home in my body again.",
+    "descZh": "每周去游两次泳，重新住回自己的身体里。",
+    "domain": "健康",
+    "mood": "自由",
+    "svg_pattern": "健康",
+    "time_scope": "short",
+    "target_time": "months",
+    "keywords": [
+      "blue water",
+      "strong limbs"
+    ],
+    "created_at": "2026-08-09T23:14:50.743Z",
+    "svg_data": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <style>\n    @keyframes wave { from { transform: translateX(0); } to { transform: translateX(-32px); } }\n    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }\n  </style>\n  <g stroke-linecap=\"round\" stroke-linejoin=\"round\">\n    <!-- Horizon Line -->\n    <path d=\"M40 160 Q 200 150 360 160\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n    \n    <!-- Distant hills -->\n    <path d=\"M30 160 Q 100 130 150 150 M250 150 Q 300 120 370 150\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n\n    <!-- Hero: The Swimmer (Gesture Figure) -->\n    <g stroke=\"#2E2B33\" stroke-width=\"2.6\">\n      <path d=\"M180 120 Q 200 110 220 120 Q 230 140 220 150\" fill=\"none\" />\n      <circle cx=\"215\" cy=\"115\" r=\"5\" fill=\"none\" />\n      <path d=\"M190 130 L170 145\" fill=\"none\" />\n      <path d=\"M210 135 L230 155\" fill=\"none\" />\n    </g>\n\n    <!-- Defining Prop: Goggles on forehead -->\n    <path d=\"M210 112 Q 215 110 220 112\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"1.8\" />\n\n    <!-- Water Layers -->\n    <g stroke=\"#6B5C8E\" stroke-width=\"1.8\" style=\"animation: wave 5s linear infinite\">\n      <path d=\"M0 170 Q 50 160 100 170 T 200 170 T 300 170 T 400 170\" fill=\"none\" stroke-dasharray=\"14 8\" />\n      <path d=\"M0 185 Q 50 175 100 185 T 200 185 T 300 185 T 400 185\" fill=\"none\" stroke-dasharray=\"14 8\" />\n    </g>\n\n    <!-- Foreground details -->\n    <path d=\"M80 180 L85 175 M85 180 L90 175\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n    <path d=\"M320 185 L325 180 M325 185 L330 180\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n\n    <!-- Texture -->\n    <path d=\"M190 155 L200 155 M205 155 L215 155\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n\n    <!-- Floating element: Sun/Star -->\n    <circle cx=\"340\" cy=\"60\" r=\"3\" fill=\"#B5A8D0\" style=\"animation: float 5s ease-in-out infinite\" />\n  </g>\n</svg>"
+  },
+  {
+    "id": "sample_4",
+    "titleEn": "Creative Work With Quiet Mornings",
+    "titleZh": "在晨光微熹中，守住那份专注创造的宁静",
+    "descEn": "Find work that lets me keep making things and still keep my quiet mornings.",
+    "descZh": "找到一份能一直做东西、又留得住清晨的工作。",
+    "domain": "事业",
+    "mood": "平静",
+    "svg_pattern": "事业",
+    "time_scope": "long",
+    "target_time": "years",
+    "keywords": [
+      "coffee",
+      "notebook",
+      "desk"
+    ],
+    "created_at": "2026-08-09T23:15:02.642Z",
+    "svg_data": "<svg viewBox=\"0 0 400 220\" xmlns=\"http://www.w3.org/2000/svg\">\n  <style>\n    @keyframes wave { from { transform: translateX(0); } to { transform: translateX(-32px); } }\n    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }\n  </style>\n  <g stroke-linecap=\"round\" stroke-linejoin=\"round\">\n    <!-- Far background: Hills and Sun -->\n    <path d=\"M50 150 Q 150 100 250 140 T 350 130\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n    <circle cx=\"320\" cy=\"60\" r=\"15\" fill=\"none\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n    \n    <!-- Midground: Desk/Workbench (The Hero) and Person -->\n    <path d=\"M120 160 L 280 160 L 275 180 L 125 180 Z\" fill=\"none\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" />\n    <path d=\"M140 160 L 140 130 M 260 160 L 260 130\" fill=\"none\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" />\n    \n    <!-- Defining Prop: Open Book and Pen -->\n    <path d=\"M160 150 L 240 150 L 230 130 L 170 130 Z\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    <path d=\"M170 140 L 230 140\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    <path d=\"M210 130 L 220 110\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    \n    <!-- Gesture Figure -->\n    <path d=\"M100 170 Q 105 130 115 120\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    <circle cx=\"115\" cy=\"115\" r=\"6\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    <path d=\"M115 125 L 130 140\" fill=\"none\" stroke=\"#2E2B33\" stroke-width=\"2.6\" />\n    \n    <!-- Motion elements: Floating creative lines/stars -->\n    <g style=\"animation: float 5s ease-in-out infinite\">\n      <path d=\"M250 100 L 255 95 M 255 100 L 250 95\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" />\n      <path d=\"M270 80 L 275 75 M 275 80 L 270 75\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" />\n    </g>\n    \n    <!-- Texture: Grounding/Hatching -->\n    <path d=\"M100 180 l 5 -5 M 110 180 l 5 -5 M 270 180 l 5 -5\" stroke=\"#B5A8D0\" stroke-width=\"1.3\" />\n    \n    <!-- Foreground: Small plant -->\n    <path d=\"M80 180 Q 80 160 75 150 M 80 180 Q 80 160 85 150\" fill=\"none\" stroke=\"#6B5C8E\" stroke-width=\"1.8\" />\n  </g>\n</svg>"
+  }
+];
+
+/** Localized, display-only sample wishes shown when the gallery is empty.
+ *  Not saved to localStorage — they switch with the UI language and vanish
+ *  the moment the visitor creates a real wish. */
+export function getSampleWishes(language: 'en' | 'zh'): LocalWish[] {
+  const zh = language === 'zh';
+  return SAMPLES.map((s) => ({
+    id: s.id,
+    title: zh ? s.titleZh : s.titleEn,
+    description: zh ? s.descZh : s.descEn,
+    domain: s.domain,
+    stage: null,
+    will_source: null,
+    end_scene: null,
+    time_scope: s.time_scope,
+    target_time: s.target_time,
+    svg_pattern: s.svg_pattern,
+    svg_data: s.svg_data,
+    keywords: s.keywords,
+    mood: s.mood,
+    line_seed: s.id,
+    pinned: false,
+    last_connected_at: null,
+    last_level: null,
+    created_at: s.created_at,
+    updated_at: s.created_at,
+    synced: false,
+  }));
+}

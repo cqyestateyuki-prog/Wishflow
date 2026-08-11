@@ -18,6 +18,7 @@ import { StarIcon, WaveIcon, BoardIcon } from '@/components/Icons';
 import { useLocalWishes } from '@/hooks/useLocalWishes';
 import { useLanguage } from '@/components/LanguageProvider';
 import { LocalWish, clearSampleData } from '@/lib/localStore';
+import { getSampleWishes } from '@/lib/sampleWishes';
 import { DOMAINS, CONNECTION_LEVELS } from '@/lib/constants';
 import { supabase } from '@/lib/supabase/client';
 import { WOBBLY_FRAME } from '@/components/wobblyFrame';
@@ -96,9 +97,16 @@ export default function WishesPage() {
     search: searchQuery,
     domain: domainFilter || undefined,
   });
-  const sortedWishes = getSorted(sortBy).filter(w => 
+  const realSorted = getSorted(sortBy).filter(w =>
     filteredWishes.some(fw => fw.id === w.id)
   );
+  // Populated demo: when the visitor has no wishes of their own (and isn't
+  // searching/filtering), show a localized set of example wishes instead of an
+  // empty page. Display-only — never saved, switches with the UI language, and
+  // disappears the moment a real wish exists. board / galaxy / river all read
+  // sortedWishes, so this single fallback populates every view.
+  const showingSamples = !loading && wishes.length === 0 && !searchQuery && !domainFilter;
+  const sortedWishes = showingSamples ? getSampleWishes(language) : realSorted;
 
   // Handle connection
   const handleConnect = useCallback((wishId: string, level: string, note?: string) => {
@@ -127,7 +135,7 @@ export default function WishesPage() {
 
   return (
     <PageShell titleKey="wishes_title">
-      {isLoggedIn === false && (
+      {isLoggedIn === false && !showingSamples && (
         <div style={{ marginBottom: 16 }}>
           <LoginPrompt
             variant="inline"
@@ -153,9 +161,13 @@ export default function WishesPage() {
             {language === 'zh' ? '愿力卡库' : 'Wish Gallery'}
           </h1>
           <p className="muted" style={{ marginTop: 4, fontSize: 13 }}>
-            {language === 'zh'
-              ? `${totalCount} 个愿望 · ${pinnedCount} 个置顶`
-              : `${totalCount} wishes · ${pinnedCount} pinned`
+            {showingSamples
+              ? (language === 'zh'
+                  ? '示例愿望 · 在上方写下你的第一个'
+                  : 'Example wishes · write your first one above')
+              : (language === 'zh'
+                  ? `${totalCount} 个愿望 · ${pinnedCount} 个置顶`
+                  : `${totalCount} wishes · ${pinnedCount} pinned`)
             }
           </p>
         </div>
