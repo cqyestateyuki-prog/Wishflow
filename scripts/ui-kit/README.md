@@ -48,9 +48,23 @@ PY
 6. **卡片缩略图必须从顶部裁** —— `sips -c` 是**居中裁**（`--cropOffset` 不生效），
    长页面会截到中段。用 PIL 显式 `crop((0,0,w,min(1688,h)))`。
 
+## `--noseed`（2026-08 起，推荐）
+
+画廊空态现在会**自动展示本地化示例愿望**（`lib/sampleWishes.ts` → `getSampleWishes`），
+所以不必再往 localStorage 种夹具。加 `--noseed` 跑，截出的画廊就是**线上访客真实看到的样子**
+（4 张示例卡 + “Example wishes / 示例愿望” 副标题），与线上一致：
+
+```bash
+NOSEED=1 node scripts/ui-kit/shoot.js     # 或 node scripts/ui-kit/shoot.js --noseed
+```
+
+不加 `--noseed` 仍是老行为（种 `wishes-{lang}.json` 夹具）。`wishes-*.json` 现在只用于
+`--generate` 重新灌样例内容时的落盘，以及 `lib/sampleWishes.ts` 的生成源
+（`node scripts/gen-samples.mjs`）。
+
 ## 链接策略
 
-公开页跳线上（`https://wishflow-ruddy.vercel.app`），画廊三视图开整页长图 ——
-访客线上看到的是空画廊，截图里才有那 4 个愿望。
+公开页跳线上（`https://wishflow-ruddy.vercel.app`），画廊三视图开整页长图。
+现在线上访客看到的画廊**已不是空的** —— 空态自动出示例愿望，与截图一致（用 `--noseed` 截）。
 
 语言是客户端设置不是路由，所以中英两张卡跳的是同一个 URL，首访看到的是默认语言。

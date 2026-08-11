@@ -20,6 +20,9 @@ const HERE = __dirname;
 const OUT = path.join(HERE, 'out');
 const BASE = process.env.BASE || 'http://localhost:3040';
 const REGEN = process.argv.includes('--generate');
+// --noseed: 不往 localStorage 种愿望。空态时 /wishes 会自动展示本地化示例愿望
+//   (getSampleWishes), 截出的画廊就与线上访客看到的一致 —— 见下方「链接策略」已更新。
+const NOSEED = process.argv.includes('--noseed') || process.env.NOSEED === '1';
 
 // 屏 → 路由。Board/Galaxy/River 是同一路由的三个视图, 单独处理
 const PAGES = [['home', '/'], ['try', '/try'], ['daily', '/daily'], ['login', '/login'], ['terms', '/terms']];
@@ -100,13 +103,13 @@ async function generate(p, lang) {
     for (const mobile of [false, true]) {
       const tag = mobile ? 'm' : 'd';
       const ctx = await mk(browser, lang, mobile);
-      await ctx.addInitScript(([W, regen]) => {
+      await ctx.addInitScript(([W, regen, noseed]) => {
         try {
           // 三处首访提示气泡标记为已读, 否则每页都被挡住
           ['create', 'gallery', 'today'].forEach(k => localStorage.setItem(`wishflow_hint_${k}_v1`, '1'));
-          if (!regen) localStorage.setItem('wishflow_wishes', W);
+          if (!regen && !noseed) localStorage.setItem('wishflow_wishes', W);
         } catch (e) {}
-      }, [wishes, REGEN]);
+      }, [wishes, REGEN, NOSEED]);
       const p = await ctx.newPage();
 
       // ★语言不能 seed wishflow_settings —— 那个不生效, 必须点导航里那颗切换钮
