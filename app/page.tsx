@@ -738,7 +738,7 @@ export default function HomePage() {
         <div ref={scene2Ref} style={{
           position: 'absolute', inset: 0, zIndex: 46, opacity: 0, pointerEvents: 'none',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          textAlign: 'center', paddingTop: isMobile ? '12vh' : '14vh',
+          textAlign: 'center', paddingTop: isMobile ? '12vh' : '14vh', paddingBottom: isMobile ? '7vh' : '8vh',
         }}>
           <h2 style={{ fontFamily: serif, fontSize: 'clamp(30px, 5vw, 56px)', color: 'var(--ink)', lineHeight: zh ? 1.3 : 1.1, margin: 0, padding: '0 24px' }}>
             {zh ? '你的愿望住在这里。' : 'Your wishes live here.'}
@@ -750,7 +750,7 @@ export default function HomePage() {
               itself opts back in */}
           <Link
             href="/try"
-            style={{ pointerEvents: 'auto', marginTop: 26, background: 'var(--wish)', color: '#fff', borderRadius: 999, padding: '13px 30px', textDecoration: 'none', boxShadow: 'var(--shadow-lift, 0 10px 30px rgba(107,92,142,0.18))' }}
+            style={{ pointerEvents: 'auto', marginTop: 'auto', background: 'var(--wish)', color: '#fff', borderRadius: 999, padding: '13px 30px', textDecoration: 'none', boxShadow: 'var(--shadow-lift, 0 10px 30px rgba(107,92,142,0.18))' }}
           >
             {zh ? '创建我的愿望' : 'Create my wish'}
           </Link>
